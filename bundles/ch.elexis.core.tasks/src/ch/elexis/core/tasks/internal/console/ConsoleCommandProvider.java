@@ -3,8 +3,11 @@ package ch.elexis.core.tasks.internal.console;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 import org.eclipse.osgi.framework.console.CommandProvider;
@@ -35,6 +38,7 @@ import ch.elexis.core.tasks.model.ITask;
 import ch.elexis.core.tasks.model.ITaskDescriptor;
 import ch.elexis.core.tasks.model.ITaskService;
 import ch.elexis.core.tasks.model.ModelPackage;
+import ch.elexis.core.tasks.model.OwnerTaskNotification;
 import ch.elexis.core.tasks.model.TaskTriggerType;
 import ch.elexis.core.time.TimeUtil;
 
@@ -110,7 +114,7 @@ public class ConsoleCommandProvider extends AbstractConsoleCommandProvider {
 		List<ITask> runningTasks = taskService.getRunningTasks();
 		// Trigger	ID	Descriptor Id/RefId		StartTime		Progress (%)
 		prflp("State", 8);
-		prflp("Trigger", 10);
+		prflp("Trigger", 11);
 		prflp("ID", 27);
 		prflp("Descriptor Id/RefId", 27);
 		prflp("StartTime", 25);
@@ -119,23 +123,27 @@ public class ConsoleCommandProvider extends AbstractConsoleCommandProvider {
 		runningTasks.stream().forEach(t -> {
 			ITaskDescriptor td = t.getTaskDescriptor();
 			prflp("RUN", 8);
-			prflp(td.getTriggerType().getName(), 10);
+			prflp(td.getTriggerType().getName(), 11);
 			prflp(t.getId(), 27);
 			prflp(td.getReferenceId(), 27);
 			prflp(TimeUtil.formatSafe(t.getRunAt()), 25);
 			String owner = (td.getOwner() != null) ? td.getOwner().getId() : "null";
-			prflp(owner + " / " + td.getRunner() + " / " + td.getIdentifiedRunnableId(), 70, true);
+			prflp(
+				owner + " / " + formatRunner(td.getRunner()) + " / " + td.getIdentifiedRunnableId(),
+				70, true);
 		});
 		
 		List<ITaskDescriptor> incurredTasks = taskService.getIncurredTasks();
 		incurredTasks.stream().forEach(td -> {
 			prflp("INC", 8);
-			prflp(td.getTriggerType().getName(), 10);
+			prflp(td.getTriggerType().getName(), 11);
 			prflp("", 27);
 			prflp(td.getReferenceId(), 27);
 			prflp("NR " + (String) td.getTransientData().get("cron-next-exectime"), 25);
 			String owner = (td.getOwner() != null) ? td.getOwner().getId() : "null";
-			prflp(owner + " / " + td.getRunner() + " / " + td.getIdentifiedRunnableId(), 70, true);
+			prflp(
+				owner + " / " + formatRunner(td.getRunner()) + " / " + td.getIdentifiedRunnableId(),
+				70, true);
 		});
 		
 		IQuery<ITaskDescriptor> tdQuery =
@@ -147,13 +155,23 @@ public class ConsoleCommandProvider extends AbstractConsoleCommandProvider {
 		taskDescriptors.stream().forEach(td -> {
 			String state = td.isActive() ? "ACT" : "INACT";
 			prflp(state, 8);
-			prflp(td.getTriggerType().getName(), 10);
+			prflp(td.getTriggerType().getName(), 11);
 			prflp("", 27);
 			prflp(td.getReferenceId(), 27);
 			prflp("", 25);
 			String owner = (td.getOwner() != null) ? td.getOwner().getId() : "null";
-			prflp(owner + " / " + td.getRunner() + " / " + td.getIdentifiedRunnableId(), 70, true);
+			prflp(
+				owner + " / " + formatRunner(td.getRunner()) + " / " + td.getIdentifiedRunnableId(),
+				70, true);
 		});
+	}
+	
+	private String formatRunner(String runner){
+		if (contextService.getStationIdentifier().equalsIgnoreCase(runner)) {
+			return runner.toUpperCase();
+		} else {
+			return runner.toLowerCase();
+		}
 	}
 	
 	@CmdAdvisor(description = "Activate a task descriptor for execution")
@@ -225,13 +243,13 @@ public class ConsoleCommandProvider extends AbstractConsoleCommandProvider {
 	
 	@CmdAdvisor(description = "set attributes on a task descriptor")
 	public String __task_descriptor_set(@CmdParam(description = "tdIdOrTdRefId")
-	String idOrReferenceId, @CmdParam(description = "key")
-	String key, @CmdParam(description = "value")
-	String value){
+	String idOrReferenceId,
+		@CmdParam(description = "(owner | runner | referenceid | trigger | otn)")
+		String key, @CmdParam(description = "value ")
+		String value){
 		ITaskDescriptor taskDescriptor =
 			taskService.findTaskDescriptorByIdOrReferenceId(idOrReferenceId).orElse(null);
 		if (taskDescriptor != null) {
-			System.out.println(key.toLowerCase());
 			switch (key.toLowerCase()) {
 			case "owner":
 				IUser user = CoreModelServiceHolder.get().load(value, IUser.class).orElse(null);
@@ -246,6 +264,22 @@ public class ConsoleCommandProvider extends AbstractConsoleCommandProvider {
 				break;
 			case "referenceid":
 				taskDescriptor.setReferenceId(value);
+				break;
+			case "trigger":
+				TaskTriggerType ttt = TaskTriggerType.getByName(value.toUpperCase());
+				if (ttt != null) {
+					taskDescriptor.setTriggerType(ttt);
+				} else {
+					return "TaskTriggerType not found";
+				}
+				break;
+			case "otn":
+				OwnerTaskNotification otn = OwnerTaskNotification.getByName(value.toUpperCase());
+				if (otn != null) {
+					taskDescriptor.setOwnerNotification(otn);
+				} else {
+					return "OwnerTaskNotification not found";
+				}
 				break;
 			default:
 				if (key.toLowerCase().startsWith("runcontext.")) {
@@ -273,6 +307,24 @@ public class ConsoleCommandProvider extends AbstractConsoleCommandProvider {
 		} else {
 			fail("Invalid or ambiguous id argument");
 		}
+	}
+	
+	@CmdAdvisor(description = "directly execute a runnable using its default context")
+	public void __task_singleshot(@CmdParam(description = "runnableId")
+	String runnableId) throws TaskException{
+		IIdentifiedRunnable runnable = taskService.instantiateRunnableById(runnableId);
+		ITaskDescriptor taskDescriptor = taskService.createTaskDescriptor(runnable);
+		String referenceId = taskDescriptor.getReferenceId();
+		taskDescriptor.setReferenceId("sshot_"+referenceId);
+		ITask task = taskService.triggerSync(taskDescriptor, new ConsoleProgressMonitor(),
+			TaskTriggerType.MANUAL, null);
+		Map<String, ?> result = task.getResult();
+		Set<String> keySet = result.keySet();
+		for (Iterator<String> iterator = keySet.iterator(); iterator.hasNext();) {
+			String key = iterator.next();
+			ci.println(key + ":" + result.get(key));
+		}
+		taskModelService.delete(taskDescriptor);
 	}
 	
 	@CmdAdvisor(description = "deactivate and remove a task descriptor")

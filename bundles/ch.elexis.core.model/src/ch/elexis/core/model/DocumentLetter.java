@@ -84,10 +84,7 @@ public class DocumentLetter extends AbstractIdDeleteModelAdapter<Brief>
 	@Override
 	public Date getCreated(){
 		LocalDateTime creationDate = getEntity().getCreationDate();
-		if (creationDate != null) {
-			return toDate(getEntity().getCreationDate());
-		}
-		return null;
+		return creationDate != null ? toDate(creationDate) : getLastchanged();
 	}
 	
 	@Override
@@ -97,7 +94,13 @@ public class DocumentLetter extends AbstractIdDeleteModelAdapter<Brief>
 	
 	@Override
 	public Date getLastchanged(){
-		return TimeUtil.toDate(getEntity().getModifiedDate());
+		if (getEntity().getModifiedDate() != null) {
+			return toDate(getEntity().getModifiedDate());
+		}
+		if (getEntity().getLastupdate() != null) {
+			return new Date(getEntity().getLastupdate().longValue());
+		}
+		return new Date(0);
 	}
 	
 	@Override
@@ -225,10 +228,9 @@ public class DocumentLetter extends AbstractIdDeleteModelAdapter<Brief>
 	public void setContent(InputStream content){
 		setStatus(DocumentStatus.PREPROCESSED, false);
 		setStatus(DocumentStatus.INDEXED, false);
-		
+		setLastchanged(new Date());
 		IVirtualFilesystemHandle vfsHandle = DocumentLetterUtil.getExternalHandleIfApplicable(this);
 		if (vfsHandle != null) {
-			
 			if (content == null) {
 				try {
 					vfsHandle.delete();

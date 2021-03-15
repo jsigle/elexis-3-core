@@ -17,6 +17,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ch.elexis.core.common.ElexisEventTopics;
 import ch.elexis.core.model.IPatient;
 import ch.elexis.core.model.IPrescription;
 import ch.elexis.core.model.IRecipe;
@@ -49,22 +50,28 @@ public class PrintRecipeHandler extends AbstractHandler {
 			medicationType = "selection";
 		}
 		
+		String address =
+			event.getParameter("ch.elexis.core.ui.medication.commandParameter.address"); //$NON-NLS-1$
+		
 		List<IPrescription> prescRecipes = getPrescriptions(patient, medicationType, event);
 		if (!prescRecipes.isEmpty()) {
 			prescRecipes = sortPrescriptions(prescRecipes, event);
 			
 			IRecipe recipe = MedicationServiceHolder.get().createRecipe(patient, prescRecipes);
 			
-			// PMDI - Dependency Injection through ElexisConfigurationConstants
 			RezeptBlatt rpb;
 			try {
 				rpb = (RezeptBlatt) PlatformUI.getWorkbench().getActiveWorkbenchWindow()
 					.getActivePage().showView(ElexisConfigurationConstants.rezeptausgabe);
+				boolean previousAddressSelection = rpb.isAddressSelection();
+				rpb.setAddressSelection("select".equals(address));
 				rpb.createRezept(Rezept.load(recipe.getId()));
+				rpb.setAddressSelection(previousAddressSelection);
+				
+				ContextServiceHolder.get().postEvent(ElexisEventTopics.EVENT_UPDATE, recipe);
 			} catch (PartInitException e) {
 				log.error("Error outputting recipe", e);
 			}
-			// PMDI - Dependency Injection through ElexisConfigurationConstants
 		}
 		return null;
 	}

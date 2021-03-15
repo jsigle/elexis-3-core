@@ -8,8 +8,11 @@ import javax.inject.Inject;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.UIEventTopic;
+import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
+import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
 import org.eclipse.e4.ui.services.EMenuService;
+import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
 import org.eclipse.e4.ui.workbench.modeling.ESelectionService;
@@ -40,13 +43,20 @@ import ch.elexis.core.services.IQuery;
 import ch.elexis.core.services.IQuery.ORDER;
 import ch.elexis.core.tasks.model.ITask;
 import ch.elexis.core.time.TimeUtil;
+import ch.elexis.core.ui.e4.parts.IRefreshablePart;
 import ch.elexis.core.ui.icons.Images;
 import ch.elexis.core.ui.tasks.internal.TaskModelServiceHolder;
 
-public class TaskLogPart implements IDoubleClickListener {
+public class TaskLogPart implements IDoubleClickListener, IRefreshablePart {
 	
 	@Inject
 	private ESelectionService selectionService;
+	
+	@Inject
+	private EModelService modelService;
+	
+	@Inject
+	private MApplication application;
 	
 	@Inject
 	private EPartService partService;
@@ -56,6 +66,8 @@ public class TaskLogPart implements IDoubleClickListener {
 	private TableViewer tableViewerResults;
 	private SetModel inputModel;
 	private DeferredContentProvider contentProvider;
+	
+	// TODO only Admin should see all, else only current user
 	
 	@PostConstruct
 	public void createControls(Composite parent, EMenuService menuService){
@@ -78,7 +90,7 @@ public class TaskLogPart implements IDoubleClickListener {
 		tableResults = tableViewerResults.getTable();
 		tableResults.setHeaderVisible(true);
 		tableResults.setLinesVisible(true);
-		contentProvider = new DeferredContentProvider(ITaskComparators.ofLastUpdate().reversed());
+		contentProvider = new DeferredContentProvider(ITaskComparators.ofRunAt());
 		tableViewerResults.setContentProvider(contentProvider);
 		tableViewerResults.setUseHashlookup(true);
 		tableViewerResults.addDoubleClickListener(this);
@@ -156,15 +168,17 @@ public class TaskLogPart implements IDoubleClickListener {
 			@Override
 			public void widgetSelected(SelectionEvent e){
 				tableResults.setSortColumn(tblclmnStartTime);
-				if (tableResults.getSortDirection() == SWT.DOWN) {
+				if (tableResults.getSortDirection() == SWT.UP) {
 					contentProvider.setSortOrder(ITaskComparators.ofRunAt());
-					tableResults.setSortDirection(SWT.UP);
+					tableResults.setSortDirection(SWT.DOWN);
 				} else {
 					contentProvider.setSortOrder(ITaskComparators.ofRunAt().reversed());
-					tableResults.setSortDirection(SWT.DOWN);
+					tableResults.setSortDirection(SWT.UP);
 				}
 			}
 		});
+		tableResults.setSortColumn(tblclmnStartTime);
+		tableResults.setSortDirection(SWT.DOWN);
 		
 		TableViewerColumn tvcFinishTime = new TableViewerColumn(tableViewerResults, SWT.NONE);
 		tvcFinishTime.setLabelProvider(new ColumnLabelProvider() {
@@ -181,17 +195,15 @@ public class TaskLogPart implements IDoubleClickListener {
 			@Override
 			public void widgetSelected(SelectionEvent e){
 				tableResults.setSortColumn(tblclmnFinishTime);
-				if (tableResults.getSortDirection() == SWT.DOWN) {
+				if (tableResults.getSortDirection() == SWT.UP) {
 					contentProvider.setSortOrder(ITaskComparators.ofFinishedAt());
-					tableResults.setSortDirection(SWT.UP);
+					tableResults.setSortDirection(SWT.DOWN);
 				} else {
 					contentProvider.setSortOrder(ITaskComparators.ofFinishedAt().reversed());
-					tableResults.setSortDirection(SWT.DOWN);
+					tableResults.setSortDirection(SWT.UP);
 				}
 			}
 		});
-		tableResults.setSortColumn(tblclmnStartTime);
-		tableResults.setSortDirection(SWT.DOWN);
 		
 		TableViewerColumn tvcState = new TableViewerColumn(tableViewerResults, SWT.NONE);
 		tvcState.setLabelProvider(TaskResultLabelProvider.getInstance());
@@ -199,6 +211,7 @@ public class TaskLogPart implements IDoubleClickListener {
 		tcLayout.setColumnData(tblclmnState, new ColumnPixelData(22, true, false));
 		tblclmnState.setText("");
 		
+		// OWNER
 		TableViewerColumn tvcOwner = new TableViewerColumn(tableViewerResults, SWT.NONE);
 		tvcOwner.setLabelProvider(new ColumnLabelProvider() {
 			@Override
@@ -208,8 +221,47 @@ public class TaskLogPart implements IDoubleClickListener {
 			}
 		});
 		TableColumn tblclmnOwner = tvcOwner.getColumn();
-		tcLayout.setColumnData(tblclmnOwner, new ColumnPixelData(100, true, true));
+		tcLayout.setColumnData(tblclmnOwner, new ColumnPixelData(70, true, true));
 		tblclmnOwner.setText("User");
+		tblclmnOwner.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e){
+				tableResults.setSortColumn(tblclmnOwner);
+				if (tableResults.getSortDirection() == SWT.DOWN) {
+					contentProvider.setSortOrder(ITaskComparators.ofOwner());
+					tableResults.setSortDirection(SWT.UP);
+				} else {
+					contentProvider.setSortOrder(ITaskComparators.ofOwner().reversed());
+					tableResults.setSortDirection(SWT.DOWN);
+				}
+			}
+		});
+		
+		// RUNNER
+		TableViewerColumn tvcRunner = new TableViewerColumn(tableViewerResults, SWT.NONE);
+		tvcRunner.setLabelProvider(new ColumnLabelProvider() {
+			@Override
+			public String getText(Object element){
+				ITask task = (ITask) element;
+				return task.getRunner();
+			}
+		});
+		TableColumn tblclmnRunner = tvcRunner.getColumn();
+		tcLayout.setColumnData(tblclmnRunner, new ColumnPixelData(80, true, true));
+		tblclmnRunner.setText("Runner");
+		tblclmnRunner.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e){
+				tableResults.setSortColumn(tblclmnRunner);
+				if (tableResults.getSortDirection() == SWT.DOWN) {
+					contentProvider.setSortOrder(ITaskComparators.ofRunner());
+					tableResults.setSortDirection(SWT.UP);
+				} else {
+					contentProvider.setSortOrder(ITaskComparators.ofRunner().reversed());
+					tableResults.setSortDirection(SWT.DOWN);
+				}
+			}
+		});
 		
 		tableViewerResults.addSelectionChangedListener(event -> {
 			IStructuredSelection selection = tableViewerResults.getStructuredSelection();
@@ -229,6 +281,7 @@ public class TaskLogPart implements IDoubleClickListener {
 		return contentProvider;
 	}
 	
+	@Override
 	public void refresh(){
 		IQuery<ITask> taskQuery = TaskModelServiceHolder.get().getQuery(ITask.class);
 		taskQuery.orderBy(ModelPackage.Literals.IDENTIFIABLE__LASTUPDATE, ORDER.DESC);
@@ -239,15 +292,18 @@ public class TaskLogPart implements IDoubleClickListener {
 	@Focus
 	public void setFocus(){
 		tableResults.setFocus();
+		refresh();
 	}
 	
 	@Optional
 	@Inject
-	void deleteTask(@UIEventTopic(ElexisEventTopics.EVENT_DELETE) ITask iTask){
+	void deleteTask(@UIEventTopic(ElexisEventTopics.EVENT_DELETE)
+	ITask iTask){
 		inputModel.removeAll(new ITask[] {
 			iTask
 		});
 		tableResults.deselectAll();
+		refresh();
 	}
 	
 	@Override
@@ -256,6 +312,14 @@ public class TaskLogPart implements IDoubleClickListener {
 		MPart taskDetailPart =
 			partService.createPart("ch.elexis.core.ui.tasks.partdescriptor.taskdetail");
 		taskDetailPart.getTransientData().put("task", selectedTask);
-		partService.showPart(taskDetailPart, PartState.CREATE);
+		
+		MPartStack detailPartStack = (MPartStack) modelService
+			.find("ch.elexis.core.ui.tasks.partstack.details", application);
+		if (detailPartStack != null && detailPartStack.isVisible()) {
+			detailPartStack.getChildren().add(taskDetailPart);
+			partService.activate(taskDetailPart);
+		} else {
+			partService.showPart(taskDetailPart, PartState.CREATE);
+		}
 	}
 }

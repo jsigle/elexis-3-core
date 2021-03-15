@@ -30,6 +30,7 @@ import ch.elexis.core.spotlight.ui.controls.SpotlightResultComposite;
 import ch.elexis.core.spotlight.ui.internal.ready.SpotlightReadyComposite;
 import ch.elexis.core.spotlight.ui.internal.ready.SpotlightReadyService;
 import ch.elexis.core.ui.e4.util.CoreUiUtil;
+import ch.elexis.core.ui.icons.Images;
 
 public class SpotlightShell extends Shell {
 	
@@ -55,7 +56,7 @@ public class SpotlightShell extends Shell {
 		ISpotlightResultEntryDetailCompositeService resultEntryDetailCompositeService,
 		SpotlightReadyService spotlightReadyService,
 		Map<String, String> spotlightContextParameters){
-		super(shell, SWT.NO_TRIM | SWT.TOOL);
+		super(shell, SWT.NO_TRIM | SWT.TOOL | SWT.BORDER);
 		this.partService = partService;
 		this.spotlightService = spotlightService;
 		this.resultEntryDetailCompositeService = resultEntryDetailCompositeService;
@@ -67,16 +68,18 @@ public class SpotlightShell extends Shell {
 			switch (event.detail) {
 			// ESC closes the shell
 			case SWT.TRAVERSE_ESCAPE:
-				System.out.println(shell.getDisplay().getFocusControl().getClass().getName());
+//				System.out.println(shell.getDisplay().getFocusControl().getClass().getName());
 				close();
 				event.detail = SWT.TRAVERSE_NONE;
 				event.doit = false;
 				break;
 			// ENTER performs the action defined for the selected element
 			case SWT.TRAVERSE_RETURN:
-				boolean ok = uiUtil.handleEnter(selectedElement);
+				boolean ok = handleSelectedElement();
 				if (ok) {
-					close();
+					if(!isDisposed()) {
+						close();
+					}
 				}
 				event.detail = SWT.TRAVERSE_NONE;
 				event.doit = true;
@@ -88,10 +91,10 @@ public class SpotlightShell extends Shell {
 		// clicking outside closes shell
 		addListener(SWT.Deactivate, event -> close());
 		
-		uiUtil = new SpotlightUiUtil();
+		uiUtil = new SpotlightUiUtil(partService);
 		CoreUiUtil.injectServicesWithContext(uiUtil);
 		
-		setSize(700, 400);
+		setSize(700, 500);
 		createContents();
 	}
 	
@@ -110,7 +113,7 @@ public class SpotlightShell extends Shell {
 		Label lblIcon = new Label(this, SWT.NONE);
 		Image logo = JFaceResources.getImageRegistry().get(SEARCH_ICON);
 		if (logo == null) {
-			Path path = new Path("rsc/icons/magnifier-left.png");
+			Path path = new Path("rsc/icons/magnifier-left-24.png");
 			URL fileLocation =
 				FileLocator.find(FrameworkUtil.getBundle(SpotlightShell.class), path, null);
 			ImageDescriptor id = ImageDescriptor.createFromURL(fileLocation);
@@ -122,7 +125,7 @@ public class SpotlightShell extends Shell {
 		
 		filterComposite = new Composite(this, SWT.NO_FOCUS);
 		filterComposite.setLayout(new GridLayout(1, false));
-		filterComposite.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+		filterComposite.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, false));
 		filterComposite.setBackground(this.getBackground());
 		
 		if (spotlightContextParameters != null) {
@@ -131,8 +134,9 @@ public class SpotlightShell extends Shell {
 				
 				Label patientFilter = new Label(filterComposite, SWT.None);
 				patientFilter.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-				patientFilter.setText("PF");
+				patientFilter.setImage(Images.IMG_PERSON.getImage());
 				patientFilter.setBackground(getDisplay().getSystemColor(SWT.COLOR_GRAY));
+				patientFilter.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, false));
 			}
 		}
 		
@@ -177,6 +181,14 @@ public class SpotlightShell extends Shell {
 				}
 			} else if (event.keyCode == SWT.ARROW_DOWN) {
 				layeredComposite.setFocus();
+			} 
+		
+			if(event.stateMask == SWT.ALT) {
+				event.doit=false;
+				boolean success = resultComposite.handleAltKeyPressed(event.keyCode);
+				if (success) {
+					close();
+				}
 			}
 			
 		});
@@ -224,10 +236,6 @@ public class SpotlightShell extends Shell {
 		
 	}
 	
-	public void refresh(){
-		setSize(700, 400);
-	}
-	
 	public boolean setFocusAppendChar(char charachter){
 		boolean result = txtSearchInput.setFocus();
 		String text = txtSearchInput.getText();
@@ -248,6 +256,10 @@ public class SpotlightShell extends Shell {
 	
 	public void setSelectedElement(Object element){
 		this.selectedElement = element;
+	}
+	
+	public boolean handleSelectedElement() {
+		return uiUtil.handleEnter(selectedElement);
 	}
 	
 }

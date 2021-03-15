@@ -94,6 +94,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="image" eType="#//IImage"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="relatedContacts" upperBound="-1"
         eType="#//IRelatedContact"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="deceased" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="IPerson" abstract="true" interface="true"
       eSuperTypes="#//IContact">
@@ -122,6 +123,7 @@
     </eStructuralFeatures>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="maritalStatus" eType="ecore:EDataType types.ecore#//MaritalStatus"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="legalGuardian" eType="#//IPerson"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="dateOfDeath" eType="ecore:EDataType types.ecore#//LocalDateTime"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="IOrganization" abstract="true" interface="true"
       eSuperTypes="#//IContact">
@@ -418,6 +420,13 @@
       <eParameters name="value" eType="ecore:EClass http://www.eclipse.org/emf/2002/Ecore#//EObject"/>
     </eOperations>
     <eOperations name="clearContext"/>
+    <eOperations name="remove">
+      <eGenericType eClassifier="ecore:EClass types.ecore#//Result">
+        <eTypeArguments eClassifier="#//IBilled"/>
+      </eGenericType>
+      <eParameters name="billed" eType="#//IBilled"/>
+      <eParameters name="encounter" eType="#//IEncounter"/>
+    </eOperations>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="IService" abstract="true" interface="true"
       eSuperTypes="#//IBillable #//Identifiable #//Deleteable">

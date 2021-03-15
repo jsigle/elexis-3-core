@@ -240,6 +240,7 @@ public class BestellView extends ViewPart {
 								// SINGLE SHOT ORDER
 								actOrder.addEntry(art, null, null, 1);
 							}
+							CoreModelServiceHolder.get().save(actOrder);
 						}
 					}
 					if (!stockEntriesToOrder.isEmpty()) {
@@ -307,6 +308,13 @@ public class BestellView extends ViewPart {
 			}
 			list.add(iOrderEntry);
 			ret.put(iOrderEntry.getProvider(), list);
+		}
+		for (List<IOrderEntry> best : ret.values()) {
+			best.sort((IOrderEntry left, IOrderEntry right) -> {
+				String s1 = left.getArticle().getName();
+				String s2 = right.getArticle().getName();
+				return s1.compareTo(s2);
+			});
 		}
 		return ret;
 	}
@@ -727,14 +735,14 @@ public class BestellView extends ViewPart {
 	 *            title of the dialog
 	 * @return the supplier or null if none could be resolved.
 	 */
-	public static Kontakt resolveDefaultSupplier(String cfgSupplier, String selDialogTitle){
-		Kontakt supplier = null;
+	public static IContact resolveDefaultSupplier(String cfgSupplier, String selDialogTitle){
+		IContact supplier = null;
 		if (cfgSupplier != null && !cfgSupplier.isEmpty()) {
-			supplier = Kontakt.load(cfgSupplier);
+			supplier = CoreModelServiceHolder.get().load(cfgSupplier, IContact.class).orElse(null);
 		}
 		
 		//warn that there is no supplier
-		if (supplier == null || !supplier.exists()) {
+		if (supplier == null) {
 			MessageDialog.openWarning(UiDesk.getTopShell(), selDialogTitle,
 				Messages.BestellView_CantOrderNoSupplier);
 		}

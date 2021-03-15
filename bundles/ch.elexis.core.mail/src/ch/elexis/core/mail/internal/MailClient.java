@@ -5,7 +5,9 @@ import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.activation.CommandMap;
@@ -14,6 +16,10 @@ import javax.activation.DataSource;
 import javax.activation.FileDataSource;
 import javax.activation.MailcapCommandMap;
 import javax.mail.AuthenticationFailedException;
+import javax.mail.Flags;
+import javax.mail.Flags.Flag;
+import javax.mail.Folder;
+import javax.mail.Message;
 import javax.mail.Message.RecipientType;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
@@ -26,6 +32,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.mail.search.SearchTerm;
 
 import org.apache.commons.lang.StringUtils;
 import org.osgi.service.component.annotations.Activate;
@@ -33,6 +40,12 @@ import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sun.mail.imap.IMAPFolder;
+import com.sun.mail.imap.IMAPMessage;
+import com.sun.mail.imap.IMAPStore;
+
+import ch.elexis.core.jdt.Nullable;
+import ch.elexis.core.mail.IMAPMailMessage;
 import ch.elexis.core.mail.IMailClient;
 import ch.elexis.core.mail.MailAccount;
 import ch.elexis.core.mail.MailAccount.TYPE;
@@ -157,6 +170,7 @@ public class MailClient implements IMailClient {
 			if (account.getType() == TYPE.SMTP) {
 				Session session =
 					Session.getInstance(properties.getProperties(), new javax.mail.Authenticator() {
+						@Override
 						protected PasswordAuthentication getPasswordAuthentication(){
 							return new PasswordAuthentication(account.getUsername(),
 								account.getPassword());
@@ -168,6 +182,20 @@ public class MailClient implements IMailClient {
 			} else if (account.getType() == TYPE.IMAP) {
 				Session session =
 					Session.getInstance(properties.getProperties(), new javax.mail.Authenticator() {
+						@Override
+						protected PasswordAuthentication getPasswordAuthentication(){
+							return new PasswordAuthentication(account.getUsername(),
+								account.getPassword());
+						}
+					});
+				Store store = session.getStore("imap");
+				
+				store.connect();
+				store.close();
+			} else if (account.getType() == TYPE.IMAPS) {
+				Session session =
+					Session.getInstance(properties.getProperties(), new javax.mail.Authenticator() {
+						@Override
 						protected PasswordAuthentication getPasswordAuthentication(){
 							return new PasswordAuthentication(account.getUsername(),
 								account.getPassword());
@@ -184,6 +212,7 @@ public class MailClient implements IMailClient {
 			}
 		} catch (MessagingException e) {
 			logger.warn("Error testing account [" + account.getId() + "]", e);
+			lastError = ErrorTyp.CONNECTION;
 			handleException(e);
 			return false;
 		}
@@ -198,11 +227,12 @@ public class MailClient implements IMailClient {
 			if (account.getType() == TYPE.SMTP) {
 				Session session =
 					Session.getInstance(properties.getProperties(), new javax.mail.Authenticator() {
-					protected PasswordAuthentication getPasswordAuthentication(){
+						@Override
+						protected PasswordAuthentication getPasswordAuthentication(){
 							return new PasswordAuthentication(account.getUsername(),
 								account.getPassword());
-					}
-				});
+						}
+					});
 				
 				MimeMessage mimeMessage = new MimeMessage(session);
 				mimeMessage.addHeader("X-ElexisMail", "ch.elexis.core.mail");
@@ -265,6 +295,120 @@ public class MailClient implements IMailClient {
 		return true;
 	}
 	
+	@Override
+	public List<IMAPMailMessage> getMessages(MailAccount account, String sourceFolder, boolean flag,
+		boolean onlyFetchUnflagged) throws MessagingException{
+		if (account.getType() == TYPE.SMTP) {
+			logger.warn("Invalid account type for receiving [" + account.getType() + "].");
+			lastError = ErrorTyp.CONFIGTYP;
+			return Collections.emptyList();
+		}
+		
+		if (sourceFolder == null) {
+			sourceFolder = "INBOX";
+		}
+		
+		IMAPStore imapStore = null;
+		try {
+			imapStore = (IMAPStore) getSession(account).getStore();
+			imapStore.connect();
+			List<IMAPMailMessage> listMessages = new ArrayList<IMAPMailMessage>();
+			Folder folder = imapStore.getFolder(sourceFolder);
+			
+			int openMode = (flag) ? Folder.READ_WRITE : Folder.READ_ONLY;
+			folder.open(openMode);
+			
+			Message[] messages = folder.getMessages();
+			for (Message _message : messages) {
+				if (onlyFetchUnflagged && _message.getFlags().contains(Flag.FLAGGED)) {
+					continue;
+				}
+				IMAPMailMessage selfSustainableCopy = IMAPMailMessage.of((IMAPMessage) _message);
+				listMessages.add(selfSustainableCopy);
+				if (flag) {
+					_message.setFlag(Flag.FLAGGED, true);
+				}
+			}
+			folder.close(false);
+			return listMessages;
+		} finally {
+			if (imapStore != null && imapStore.isConnected()) {
+				imapStore.close();
+			}
+		}
+	}
+	
+	private Session getSession(MailAccount account){
+		MailClientProperties properties = new MailClientProperties(account);
+		return Session.getInstance(properties.getProperties(), new javax.mail.Authenticator() {
+			@Override
+			protected PasswordAuthentication getPasswordAuthentication(){
+				return new PasswordAuthentication(account.getUsername(), account.getPassword());
+			}
+		});
+	}
+	
+	@Override
+	public void moveMessage(MailAccount account, IMAPMailMessage message, @Nullable
+	String sourceFolder, String targetFolder, boolean removeFlag) throws MessagingException{
+		
+		if (sourceFolder == null) {
+			sourceFolder = "INBOX";
+		}
+		
+		if (targetFolder == null) {
+			throw new MessagingException("targetFolder must not be null");
+		}
+		
+		IMAPStore imapStore = null;
+		try {
+			imapStore = (IMAPStore) getSession(account).getStore();
+			imapStore.connect();
+			
+			IMAPFolder _sourceFolder = (IMAPFolder) imapStore.getFolder(sourceFolder);
+			IMAPFolder _targetFolder = (IMAPFolder) imapStore.getFolder(targetFolder);
+			
+			// find message in sourcefolder
+			MimeMessage referrer = (MimeMessage) message.toIMAPMessage();
+			SearchTerm searchTerm = new MySearchTerm(referrer.getSubject(), referrer.getSize());
+			
+			_sourceFolder.open(Folder.READ_WRITE);
+			Message[] matches = _sourceFolder.search(searchTerm);
+			
+			if (matches != null && matches.length == 1) {
+				// found the message, lets move it
+				
+				_targetFolder.open(Folder.READ_WRITE);
+				
+				Message[] _message = new Message[] {
+					matches[0]
+				};
+				
+				if (removeFlag) {
+					_message[0].setFlag(Flag.FLAGGED, false);
+				}
+				
+				_sourceFolder.setFlags(_message, new Flags(Flags.Flag.SEEN), true);
+				// TODO support direct move operation,
+				// requires newer javax.mail https://github.com/javaee/javamail/releases
+				// and imapStore.hasCapability("MOVE")
+				_sourceFolder.copyMessages(_message, _targetFolder);
+				_sourceFolder.setFlags(_message, new Flags(Flags.Flag.DELETED), true);
+				
+				_sourceFolder.close(true);
+				_targetFolder.close(false);
+				
+			} else {
+				throw new MessagingException("Could not find message in sourcefolder");
+			}
+			
+		} finally {
+			if (imapStore != null && imapStore.isConnected()) {
+				imapStore.close();
+			}
+		}
+	}
+	
 	private void handleException(MessagingException e){
 		if (e instanceof AuthenticationFailedException) {
 			lastError = ErrorTyp.AUTHENTICATION;
@@ -274,5 +418,29 @@ public class MailClient implements IMailClient {
 		} else if (e instanceof AddressException) {
 			lastError = ErrorTyp.ADDRESS;
 		}
+	}
+	
+	private class MySearchTerm extends SearchTerm {
+		
+		private static final long serialVersionUID = -5686587458681566618L;
+		
+		private final String subject;
+		private final int size;
+		
+		public MySearchTerm(String subject, int size){
+			this.subject = subject;
+			this.size = size;
+		}
+		
+		@Override
+		public boolean match(Message msg){
+			try {
+				return (Objects.equals(msg.getSubject(), subject) && msg.getSize() == size);
+			} catch (MessagingException e) {
+				logger.warn("Error matching message", e);
+				return false;
+			}
+		}
+		
 	}
 }
