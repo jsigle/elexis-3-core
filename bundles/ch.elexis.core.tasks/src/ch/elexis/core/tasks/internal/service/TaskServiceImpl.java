@@ -279,6 +279,8 @@ public class TaskServiceImpl implements ITaskService {
 		String stationIdentifier = contextService.getRootContext().getStationIdentifier();
 		taskDescriptor.setRunner(StringUtils.abbreviate(stationIdentifier, 64));
 		
+		taskDescriptor.setReferenceId(System.currentTimeMillis()+"");
+		
 		contextService.getActiveUser().ifPresent(u -> taskDescriptor.setOwner(u));
 		
 		saveTaskDescriptor(taskDescriptor);
@@ -341,11 +343,13 @@ public class TaskServiceImpl implements ITaskService {
 		if (TaskState.FAILED == state) {
 			resultText =
 				(String) task.getResult().get(ReturnParameter.FAILED_TASK_EXCEPTION_MESSAGE);
-			message.addMessageCode(MessageCode.Key.Severity, MessageCode.Value.Severity_WARN);
+			message.addMessageCode(MessageCode.Key.Severity, MessageCode.Value.Severity_ERROR);
 		} else {
+			String severity = (TaskState.COMPLETED_WARN == state) ? MessageCode.Value.Severity_WARN
+					: MessageCode.Value.Severity_INFO;
 			// TODO handle result type
 			resultText = (String) task.getResult().get(ReturnParameter.RESULT_DATA);
-			message.addMessageCode(MessageCode.Key.Severity, MessageCode.Value.Severity_INFO);
+			message.addMessageCode(MessageCode.Key.Severity, severity);
 		}
 		
 		StringBuilder sb = new StringBuilder();
@@ -385,7 +389,7 @@ public class TaskServiceImpl implements ITaskService {
 			throw new TaskException(TaskException.EXECUTION_REJECTED,
 				"Task Descriptor [" + taskDescriptor.getId() + "] is not TriggerType OTHER_TASK");
 		}
-		if (!taskDescriptor.isActive()) {
+		if (!taskDescriptor.isActive() && TaskTriggerType.MANUAL != triggerType) {
 			throw new TaskException(TaskException.EXECUTION_REJECTED,
 				"Task Descriptor [" + taskDescriptor.getId() + "] is not active");
 		}

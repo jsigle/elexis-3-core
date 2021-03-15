@@ -644,6 +644,8 @@ public class VerrechnungsDisplay extends Composite implements IUnlockable {
 						if (!billResult.isOK()) {
 							ResultDialog.show(billResult);
 						} else {
+							// refresh with sorted billed list
+							CoreModelServiceHolder.get().refresh(actEncounter, true);
 							setEncounter(actEncounter);
 						}
 					} else if (object instanceof ICodeElementBlock) {
@@ -656,12 +658,16 @@ public class VerrechnungsDisplay extends Composite implements IUnlockable {
 										.bill((IBillable) element, actEncounter, 1.0);
 									if (!billResult.isOK()) {
 										ResultDialog.show(billResult);
-									} else {
-										setEncounter(actEncounter);
 									}
 								});
 							}
 						}
+						// refresh with sorted billed list
+						Display.getDefault().asyncExec(() -> {
+							CoreModelServiceHolder.get().refresh(actEncounter, true);
+							setEncounter(actEncounter);
+						});
+						
 						List<ICodeElement> diff = block.getDiffToReferences(elements);
 						if (!diff.isEmpty()) {
 							StringBuilder sb = new StringBuilder();
@@ -880,7 +886,7 @@ public class VerrechnungsDisplay extends Composite implements IUnlockable {
 						AcquireLockUi.aquireAndRun(billed, new LockDeniedNoActionLockHandler() {
 							@Override
 							public void lockAcquired(){
-								actEncounter.removeBilled(billed);
+								BillingServiceHolder.get().removeBilled(billed, actEncounter);
 							}
 						});
 					}

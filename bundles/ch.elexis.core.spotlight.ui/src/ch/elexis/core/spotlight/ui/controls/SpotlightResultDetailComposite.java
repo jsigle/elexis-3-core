@@ -32,6 +32,7 @@ public class SpotlightResultDetailComposite extends Composite {
 		GridLayout gridLayout = new GridLayout(1, false);
 		gridLayout.marginHeight = 0;
 		gridLayout.marginWidth = 0;
+		gridLayout.marginTop = 0;
 		setLayout(gridLayout);
 	}
 	
@@ -69,6 +70,10 @@ public class SpotlightResultDetailComposite extends Composite {
 			resultEntryDetailCompositeService.instantiate(category, this, SWT.None);
 		CoreUiUtil.injectServicesWithContext(activeDetailComposite);
 		activeDetailComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+	}
+
+	public boolean handleAltKeyPressed(int keyCode){
+		return activeDetailComposite.handleAltKeyPressed(keyCode);
 	}
 	
 }

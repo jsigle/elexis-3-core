@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import ch.elexis.core.services.IVirtualFilesystemService.IVirtualFilesystemHandle;
 import ch.elexis.core.services.IVirtualFilesystemService.IVirtualFilesystemhandleFilter;
+import jcifs.SmbTreeHandle;
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileFilter;
@@ -47,7 +48,7 @@ public class VirtualFilesystemHandle implements IVirtualFilesystemHandle {
 	}
 	
 	public VirtualFilesystemHandle(File file) throws IOException{
-		this.uri = file.toURI();
+		this(file.toURI());
 	}
 	
 	@Override
@@ -56,7 +57,8 @@ public class VirtualFilesystemHandle implements IVirtualFilesystemHandle {
 		if (file != null) {
 			return new FileInputStream(file);
 		}
-		return uri.toURL().openStream();
+		URL url = URIUtil.toURL(uri);
+		return url.openStream();
 	}
 	
 	@Override
@@ -88,7 +90,8 @@ public class VirtualFilesystemHandle implements IVirtualFilesystemHandle {
 	@Override
 	public IVirtualFilesystemHandle copyTo(IVirtualFilesystemHandle target) throws IOException{
 		if (target.isDirectory()) {
-			URI targetURI = target.getURI().resolve(this.getName());
+			String targetString = this.getName().replace(" ", "%20");
+			URI targetURI = target.getURI().resolve(targetString);
 			target = new VirtualFilesystemHandle(targetURI);
 			return copyTo(target);
 		}
@@ -156,7 +159,7 @@ public class VirtualFilesystemHandle implements IVirtualFilesystemHandle {
 					SmbFile _file = listFiles[i];
 					
 					try {
-						String fileURL = _file.getURL().toString().replaceAll(" ", "%20");
+						String fileURL = convertToURLEscapingIllegalCharacters(_file.getURL());
 						URI _fileUri = new URI(fileURL);
 						retVal[i] = new VirtualFilesystemHandle(_fileUri);
 					} catch (URISyntaxException e) {
@@ -201,7 +204,7 @@ public class VirtualFilesystemHandle implements IVirtualFilesystemHandle {
 	@Override
 	public URL toURL(){
 		try {
-			return uri.toURL();
+			return URIUtil.toURL(this.uri);
 		} catch (MalformedURLException e) {
 			LoggerFactory.getLogger(getClass()).warn("toURL()", e);
 		}
@@ -321,7 +324,8 @@ public class VirtualFilesystemHandle implements IVirtualFilesystemHandle {
 	@Override
 	public IVirtualFilesystemHandle moveTo(IVirtualFilesystemHandle target) throws IOException{
 		if (target.isDirectory()) {
-			URI targetURI = target.getURI().resolve(this.getName());
+			String targetString = this.getName().replace(" ", "%20");
+			URI targetURI = target.getURI().resolve(targetString);
 			target = new VirtualFilesystemHandle(targetURI);
 			return moveTo(target);
 		}
@@ -336,15 +340,33 @@ public class VirtualFilesystemHandle implements IVirtualFilesystemHandle {
 				return new VirtualFilesystemHandle(path.toFile());
 			}
 		}
-		// TODO SMB if on same resource - use rename method
-		copyTo(target);
-		delete();
-		return target;
+		
+		Optional<SmbFile> smbFile = toSmbFile();
+		if (smbFile.isPresent()) {
+			Optional<SmbFile> smbFileTarget = ((VirtualFilesystemHandle) target).toSmbFile();
+			if (smbFileTarget.isPresent()) {
+				
+				try (SmbTreeHandle smbFileTh = smbFile.get().getTreeHandle();
+						SmbTreeHandle smbFileThTarget = smbFileTarget.get().getTreeHandle()) {
+					
+					if (smbFileTh.isSameTree(smbFileThTarget)) {
+						
+						// both resources on same share
+						smbFile.get().renameTo(smbFileTarget.get());
+					} else {
+						smbFile.get().copyTo(smbFileTarget.get());
+						smbFile.get().delete();
+					}
+				}
+			}
+			return target;
+		}
+		
+		throw new IOException("Invalid type");
 	}
 	
 	@Override
 	public IVirtualFilesystemHandle subDir(String subDir) throws IOException{
-		subDir = subDir.replaceAll(" ", "%20");
 		if (!subDir.endsWith("/")) {
 			subDir += "/";
 		}
@@ -360,8 +382,6 @@ public class VirtualFilesystemHandle implements IVirtualFilesystemHandle {
 		if (subFile.startsWith("/")) {
 			throw new IllegalArgumentException("must not start with /");
 		}
-		
-		subFile = subFile.replaceAll(" ", "%20");
 		URI _uri = URIUtil.append(uri, subFile);
 		return new VirtualFilesystemHandle(_uri);
 	}
@@ -423,14 +443,31 @@ public class VirtualFilesystemHandle implements IVirtualFilesystemHandle {
 			
 			VirtualFilesystemHandle pathnameVfsHandle;
 			try {
-				String fileURL = file.getURL().toString().replaceAll(" ", "%20");
+				String fileURL = convertToURLEscapingIllegalCharacters(file.getURL());
 				URI fileUri = new URI(fileURL);
 				pathnameVfsHandle = new VirtualFilesystemHandle(fileUri);
 				return ff.accept(pathnameVfsHandle);
-			} catch (URISyntaxException e) {
+			} catch (URISyntaxException | MalformedURLException e) {
 				throw new IllegalArgumentException(e);
 			}
 		}
 		
+	}
+	
+	/**
+	 * https://en.wikipedia.org/wiki/Percent-encoding of reserved characters
+	 * 
+	 * @param toEscape
+	 * @return
+	 * @throws MalformedURLException
+	 * @throws URISyntaxException
+	 * @see adapted from https://stackoverflow.com/a/30640843/905817
+	 */
+	private String convertToURLEscapingIllegalCharacters(URL url)
+		throws MalformedURLException, URISyntaxException{
+		URI uri = new URI(url.getProtocol(), url.getUserInfo(), url.getHost(), url.getPort(),
+			url.getPath(), url.getQuery(), url.getRef());
+		//if a % is included in the toEscape string, it will be re-encoded to %25 and we don't want re-encoding, just encoding
+		return uri.toString().replace("%25", "%");
 	}
 }

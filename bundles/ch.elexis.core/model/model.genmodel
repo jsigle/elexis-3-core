@@ -68,6 +68,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//IContact/postalAddress"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//IContact/image"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//IContact/relatedContacts"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//IContact/deceased"/>
       <genOperations ecoreOperation="model.ecore#//IContact/addAddress">
         <genParameters ecoreParameter="model.ecore#//IContact/addAddress/address"/>
       </genOperations>
@@ -84,6 +85,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//IPerson/lastName"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//IPerson/maritalStatus"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//IPerson/legalGuardian"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//IPerson/dateOfDeath"/>
       <genOperations ecoreOperation="model.ecore#//IPerson/getAgeInYears"/>
       <genOperations ecoreOperation="model.ecore#//IPerson/getAgeAtIn">
         <genParameters ecoreParameter="model.ecore#//IPerson/getAgeAtIn/reference"/>
@@ -291,6 +293,10 @@
         <genParameters ecoreParameter="model.ecore#//IBillableOptifier/putContext/value"/>
       </genOperations>
       <genOperations ecoreOperation="model.ecore#//IBillableOptifier/clearContext"/>
+      <genOperations ecoreOperation="model.ecore#//IBillableOptifier/remove">
+        <genParameters ecoreParameter="model.ecore#//IBillableOptifier/remove/billed"/>
+        <genParameters ecoreParameter="model.ecore#//IBillableOptifier/remove/encounter"/>
+      </genOperations>
     </genClasses>
     <genClasses image="false" ecoreClass="model.ecore#//IService">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//IService/price"/>
@@ -676,6 +682,17 @@
       <genFeatures property="Readonly" createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//IAppointmentSeries/persistent"/>
       <genFeatures property="Readonly" notify="false" createChild="false" ecoreFeature="ecore:EReference model.ecore#//IAppointmentSeries/rootAppointment"/>
       <genOperations ecoreOperation="model.ecore#//IAppointmentSeries/getAsSeriesExtension"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="model.ecore#//ISickCertificate">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//ISickCertificate/patient"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//ISickCertificate/coverage"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//ISickCertificate/letter"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//ISickCertificate/percent"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//ISickCertificate/date"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//ISickCertificate/start"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//ISickCertificate/end"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//ISickCertificate/reason"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//ISickCertificate/note"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

@@ -6,7 +6,10 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -26,6 +29,11 @@ public class VirtualFileHandle_SmbDirectory_Test {
 	 * NOAUTH is expected to read, but not modify
 	 */
 	public static String PREFIX_NOAUTH_SAMBA = "smb://gitlab.medelexis.ch/tests/";
+	
+	public static String PREFIX_AUTH_SAMBA =
+		"smb://smbuser:qs9fifn9q1gx@gitlab.medelexis.ch/restrictedtests/";
+	public static String USER = "smbuser";
+	public static String PASS = "qs9fifn9q1gx";
 	
 	@BeforeClass
 	public static void beforeClass() throws IOException{
@@ -50,9 +58,9 @@ public class VirtualFileHandle_SmbDirectory_Test {
 		assumeTrue(serviceIsReachable);
 		assertTrue(service.of(PREFIX_NOAUTH_SAMBA + "testfile.txt").canRead());
 		assertTrue(service.of("\\\\gitlab.medelexis.ch\\tests\\testfile.txt").canRead());
-//		assertTrue(service.of(PREFIX_NOAUTH_SAMBA + "test file.txt").canRead());
-//		assertTrue(service.of("\\\\gitlab.medelexis.ch\\tests\\test file.txt").canRead());
-
+		//		assertTrue(service.of(PREFIX_NOAUTH_SAMBA + "test file.txt").canRead());
+		//		assertTrue(service.of("\\\\gitlab.medelexis.ch\\tests\\test file.txt").canRead());
+		
 	}
 	
 	@Test
@@ -68,8 +76,79 @@ public class VirtualFileHandle_SmbDirectory_Test {
 		assumeTrue(serviceIsReachable);
 		
 		IVirtualFilesystemHandle[] listHandles = service.of(PREFIX_NOAUTH_SAMBA).listHandles();
-		// 1 directory, 2 files
-		assertEquals(3, listHandles.length);
+		assertEquals(5, listHandles.length);
+		
+		try (InputStream is = listHandles[1].openInputStream()) {
+			// #21875 to test if spaces are correctly opened
+		}
+	}
+	
+	@Test
+	public void testCreateAndMoveToAndDelete() throws IOException{
+		assumeTrue(serviceIsReachable);
+
+		IVirtualFilesystemHandle dir = service.of(PREFIX_AUTH_SAMBA);
+		IVirtualFilesystemHandle subFile = dir.subFile("Test File.txt");
+		try (PrintWriter p = new PrintWriter(subFile.openOutputStream())) {
+			p.write("TestFile\n");
+		}
+		assertTrue(subFile.exists());
+		assertTrue(subFile.canRead());
+		IVirtualFilesystemHandle subFileRenamed = dir.subFile("Test File renamed.txt");
+		
+		subFile.moveTo(subFileRenamed);
+		
+		assertFalse(subFile.exists());
+		assertTrue(subFileRenamed.exists());
+		assertTrue(subFileRenamed.canRead());
+		subFileRenamed.delete();
+		assertFalse(subFileRenamed.exists());
+	}
+	
+	@Test
+	public void testCreateAndMoveToBetweenHosts() throws UnknownHostException, IOException {
+		assumeTrue(serviceIsReachable);
+		
+		boolean ee_medevit_atIsReachable = InetAddress.getByName("192.168.0.23").isReachable(300)
+				|| InetAddress.getAllByName("192.168.0.23")[0].isReachable(300);
+		
+		assumeTrue(ee_medevit_atIsReachable);
+		
+		IVirtualFilesystemHandle dir = service.of("smb://192.168.0.23/scan/processed/");
+		IVirtualFilesystemHandle subFile = dir.subFile("Test File.txt");
+		try (PrintWriter p = new PrintWriter(subFile.openOutputStream())) {
+			p.write("TestFile\n");
+		}
+		assertTrue(subFile.exists());
+		assertTrue(subFile.canRead());
+		
+		IVirtualFilesystemHandle dirOtherResource = service.of(PREFIX_AUTH_SAMBA);
+		IVirtualFilesystemHandle subFileRenamed = dirOtherResource.subFile("Test File renamed.txt");
+		
+		subFile.moveTo(subFileRenamed);
+		
+		assertFalse(subFile.exists());
+		assertTrue(subFileRenamed.exists());
+		assertTrue(subFileRenamed.canRead());
+		subFileRenamed.delete();
+		assertFalse(subFileRenamed.exists());
+	}
+	
+	@Test
+	public void testCopyToAndDelete() throws IOException{
+		assumeTrue(serviceIsReachable);
+		
+		IVirtualFilesystemHandle[] listHandles = service.of(PREFIX_NOAUTH_SAMBA)
+			.listHandles(handle -> "pdf".equalsIgnoreCase(handle.getExtension()));
+		assertEquals(2, listHandles.length);
+		
+		IVirtualFilesystemHandle target =
+			service.of(PREFIX_AUTH_SAMBA).subFile(listHandles[0].getName());
+		IVirtualFilesystemHandle _target = listHandles[0].copyTo(target);
+		assertTrue(_target.exists());
+		assertTrue(_target.canRead());
+		_target.delete();
+		assertFalse(_target.exists());
 	}
 	
 	@Test

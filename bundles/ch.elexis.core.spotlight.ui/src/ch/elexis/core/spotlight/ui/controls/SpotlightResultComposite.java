@@ -21,6 +21,7 @@ public class SpotlightResultComposite extends Composite {
 		GridLayout gridLayout = new GridLayout(2, false);
 		gridLayout.marginHeight = 0;
 		gridLayout.marginWidth = 0;
+		gridLayout.marginTop = 0;
 		setLayout(gridLayout);
 		
 		resultListComposite =
@@ -50,6 +51,10 @@ public class SpotlightResultComposite extends Composite {
 	
 	public boolean handleEnterOnFirstSpotlightResultEntry(){
 		return resultListComposite.handleEnterOnFirstSpotlightResultEntry();
+	}
+
+	public boolean handleAltKeyPressed(int keyCode){
+		return resultDetailComposite.handleAltKeyPressed(keyCode);
 	}
 
 }

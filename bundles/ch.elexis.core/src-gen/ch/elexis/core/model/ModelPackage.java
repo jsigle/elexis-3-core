@@ -448,13 +448,22 @@ public interface ModelPackage extends EPackage {
 	int ICONTACT__RELATED_CONTACTS = IDENTIFIABLE_FEATURE_COUNT + 26;
 
 	/**
+	 * The feature id for the '<em><b>Deceased</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int ICONTACT__DECEASED = IDENTIFIABLE_FEATURE_COUNT + 27;
+
+	/**
 	 * The number of structural features of the '<em>IContact</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int ICONTACT_FEATURE_COUNT = IDENTIFIABLE_FEATURE_COUNT + 27;
+	int ICONTACT_FEATURE_COUNT = IDENTIFIABLE_FEATURE_COUNT + 28;
 
 	/**
 	 * The meta object id for the '{@link ch.elexis.core.model.IPerson <em>IPerson</em>}' class.
@@ -719,6 +728,15 @@ public interface ModelPackage extends EPackage {
 	int IPERSON__RELATED_CONTACTS = ICONTACT__RELATED_CONTACTS;
 
 	/**
+	 * The feature id for the '<em><b>Deceased</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int IPERSON__DECEASED = ICONTACT__DECEASED;
+
+	/**
 	 * The feature id for the '<em><b>Date Of Birth</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -791,13 +809,22 @@ public interface ModelPackage extends EPackage {
 	int IPERSON__LEGAL_GUARDIAN = ICONTACT_FEATURE_COUNT + 7;
 
 	/**
+	 * The feature id for the '<em><b>Date Of Death</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int IPERSON__DATE_OF_DEATH = ICONTACT_FEATURE_COUNT + 8;
+
+	/**
 	 * The number of structural features of the '<em>IPerson</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int IPERSON_FEATURE_COUNT = ICONTACT_FEATURE_COUNT + 8;
+	int IPERSON_FEATURE_COUNT = ICONTACT_FEATURE_COUNT + 9;
 
 	/**
 	 * The meta object id for the '{@link ch.elexis.core.model.IOrganization <em>IOrganization</em>}' class.
@@ -1060,6 +1087,15 @@ public interface ModelPackage extends EPackage {
 	 * @ordered
 	 */
 	int IORGANIZATION__RELATED_CONTACTS = ICONTACT__RELATED_CONTACTS;
+
+	/**
+	 * The feature id for the '<em><b>Deceased</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int IORGANIZATION__DECEASED = ICONTACT__DECEASED;
 
 	/**
 	 * The feature id for the '<em><b>Insurance Xml Name</b></em>' attribute.
@@ -1351,6 +1387,15 @@ public interface ModelPackage extends EPackage {
 	int ILABORATORY__RELATED_CONTACTS = IORGANIZATION__RELATED_CONTACTS;
 
 	/**
+	 * The feature id for the '<em><b>Deceased</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int ILABORATORY__DECEASED = IORGANIZATION__DECEASED;
+
+	/**
 	 * The feature id for the '<em><b>Insurance Xml Name</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -1640,6 +1685,15 @@ public interface ModelPackage extends EPackage {
 	int IPATIENT__RELATED_CONTACTS = IPERSON__RELATED_CONTACTS;
 
 	/**
+	 * The feature id for the '<em><b>Deceased</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int IPATIENT__DECEASED = IPERSON__DECEASED;
+
+	/**
 	 * The feature id for the '<em><b>Date Of Birth</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -1710,6 +1764,15 @@ public interface ModelPackage extends EPackage {
 	 * @ordered
 	 */
 	int IPATIENT__LEGAL_GUARDIAN = IPERSON__LEGAL_GUARDIAN;
+
+	/**
+	 * The feature id for the '<em><b>Date Of Death</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int IPATIENT__DATE_OF_DEATH = IPERSON__DATE_OF_DEATH;
 
 	/**
 	 * The feature id for the '<em><b>Family Doctor</b></em>' reference.
@@ -2044,6 +2107,15 @@ public interface ModelPackage extends EPackage {
 	 * @ordered
 	 */
 	int IMANDATOR__RELATED_CONTACTS = ICONTACT__RELATED_CONTACTS;
+
+	/**
+	 * The feature id for the '<em><b>Deceased</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int IMANDATOR__DECEASED = ICONTACT__DECEASED;
 
 	/**
 	 * The feature id for the '<em><b>Biller</b></em>' reference.
@@ -7207,6 +7279,124 @@ public interface ModelPackage extends EPackage {
 	int IAPPOINTMENT_SERIES_FEATURE_COUNT = IAPPOINTMENT_FEATURE_COUNT + 10;
 
 	/**
+	 * The meta object id for the '{@link ch.elexis.core.model.ISickCertificate <em>ISick Certificate</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see ch.elexis.core.model.ISickCertificate
+	 * @see ch.elexis.core.model.impl.ModelPackageImpl#getISickCertificate()
+	 * @generated
+	 */
+	int ISICK_CERTIFICATE = 65;
+
+	/**
+	 * The feature id for the '<em><b>Lastupdate</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int ISICK_CERTIFICATE__LASTUPDATE = IDENTIFIABLE__LASTUPDATE;
+
+	/**
+	 * The feature id for the '<em><b>Deleted</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int ISICK_CERTIFICATE__DELETED = IDENTIFIABLE_FEATURE_COUNT + 0;
+
+	/**
+	 * The feature id for the '<em><b>Patient</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int ISICK_CERTIFICATE__PATIENT = IDENTIFIABLE_FEATURE_COUNT + 1;
+
+	/**
+	 * The feature id for the '<em><b>Coverage</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int ISICK_CERTIFICATE__COVERAGE = IDENTIFIABLE_FEATURE_COUNT + 2;
+
+	/**
+	 * The feature id for the '<em><b>Letter</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int ISICK_CERTIFICATE__LETTER = IDENTIFIABLE_FEATURE_COUNT + 3;
+
+	/**
+	 * The feature id for the '<em><b>Percent</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int ISICK_CERTIFICATE__PERCENT = IDENTIFIABLE_FEATURE_COUNT + 4;
+
+	/**
+	 * The feature id for the '<em><b>Date</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int ISICK_CERTIFICATE__DATE = IDENTIFIABLE_FEATURE_COUNT + 5;
+
+	/**
+	 * The feature id for the '<em><b>Start</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int ISICK_CERTIFICATE__START = IDENTIFIABLE_FEATURE_COUNT + 6;
+
+	/**
+	 * The feature id for the '<em><b>End</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int ISICK_CERTIFICATE__END = IDENTIFIABLE_FEATURE_COUNT + 7;
+
+	/**
+	 * The feature id for the '<em><b>Reason</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int ISICK_CERTIFICATE__REASON = IDENTIFIABLE_FEATURE_COUNT + 8;
+
+	/**
+	 * The feature id for the '<em><b>Note</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int ISICK_CERTIFICATE__NOTE = IDENTIFIABLE_FEATURE_COUNT + 9;
+
+	/**
+	 * The number of structural features of the '<em>ISick Certificate</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int ISICK_CERTIFICATE_FEATURE_COUNT = IDENTIFIABLE_FEATURE_COUNT + 10;
+
+	/**
 	 * Returns the meta object for class '{@link ch.elexis.core.model.Identifiable <em>Identifiable</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -7588,6 +7778,17 @@ public interface ModelPackage extends EPackage {
 	EReference getIContact_RelatedContacts();
 
 	/**
+	 * Returns the meta object for the attribute '{@link ch.elexis.core.model.IContact#isDeceased <em>Deceased</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Deceased</em>'.
+	 * @see ch.elexis.core.model.IContact#isDeceased()
+	 * @see #getIContact()
+	 * @generated
+	 */
+	EAttribute getIContact_Deceased();
+
+	/**
 	 * Returns the meta object for class '{@link ch.elexis.core.model.IPerson <em>IPerson</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -7684,6 +7885,17 @@ public interface ModelPackage extends EPackage {
 	 * @generated
 	 */
 	EReference getIPerson_LegalGuardian();
+
+	/**
+	 * Returns the meta object for the attribute '{@link ch.elexis.core.model.IPerson#getDateOfDeath <em>Date Of Death</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Date Of Death</em>'.
+	 * @see ch.elexis.core.model.IPerson#getDateOfDeath()
+	 * @see #getIPerson()
+	 * @generated
+	 */
+	EAttribute getIPerson_DateOfDeath();
 
 	/**
 	 * Returns the meta object for class '{@link ch.elexis.core.model.IOrganization <em>IOrganization</em>}'.
@@ -11411,6 +11623,115 @@ public interface ModelPackage extends EPackage {
 	EReference getIAppointmentSeries_RootAppointment();
 
 	/**
+	 * Returns the meta object for class '{@link ch.elexis.core.model.ISickCertificate <em>ISick Certificate</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>ISick Certificate</em>'.
+	 * @see ch.elexis.core.model.ISickCertificate
+	 * @generated
+	 */
+	EClass getISickCertificate();
+
+	/**
+	 * Returns the meta object for the reference '{@link ch.elexis.core.model.ISickCertificate#getPatient <em>Patient</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the reference '<em>Patient</em>'.
+	 * @see ch.elexis.core.model.ISickCertificate#getPatient()
+	 * @see #getISickCertificate()
+	 * @generated
+	 */
+	EReference getISickCertificate_Patient();
+
+	/**
+	 * Returns the meta object for the reference '{@link ch.elexis.core.model.ISickCertificate#getCoverage <em>Coverage</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the reference '<em>Coverage</em>'.
+	 * @see ch.elexis.core.model.ISickCertificate#getCoverage()
+	 * @see #getISickCertificate()
+	 * @generated
+	 */
+	EReference getISickCertificate_Coverage();
+
+	/**
+	 * Returns the meta object for the reference '{@link ch.elexis.core.model.ISickCertificate#getLetter <em>Letter</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the reference '<em>Letter</em>'.
+	 * @see ch.elexis.core.model.ISickCertificate#getLetter()
+	 * @see #getISickCertificate()
+	 * @generated
+	 */
+	EReference getISickCertificate_Letter();
+
+	/**
+	 * Returns the meta object for the attribute '{@link ch.elexis.core.model.ISickCertificate#getPercent <em>Percent</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Percent</em>'.
+	 * @see ch.elexis.core.model.ISickCertificate#getPercent()
+	 * @see #getISickCertificate()
+	 * @generated
+	 */
+	EAttribute getISickCertificate_Percent();
+
+	/**
+	 * Returns the meta object for the attribute '{@link ch.elexis.core.model.ISickCertificate#getDate <em>Date</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Date</em>'.
+	 * @see ch.elexis.core.model.ISickCertificate#getDate()
+	 * @see #getISickCertificate()
+	 * @generated
+	 */
+	EAttribute getISickCertificate_Date();
+
+	/**
+	 * Returns the meta object for the attribute '{@link ch.elexis.core.model.ISickCertificate#getStart <em>Start</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Start</em>'.
+	 * @see ch.elexis.core.model.ISickCertificate#getStart()
+	 * @see #getISickCertificate()
+	 * @generated
+	 */
+	EAttribute getISickCertificate_Start();
+
+	/**
+	 * Returns the meta object for the attribute '{@link ch.elexis.core.model.ISickCertificate#getEnd <em>End</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>End</em>'.
+	 * @see ch.elexis.core.model.ISickCertificate#getEnd()
+	 * @see #getISickCertificate()
+	 * @generated
+	 */
+	EAttribute getISickCertificate_End();
+
+	/**
+	 * Returns the meta object for the attribute '{@link ch.elexis.core.model.ISickCertificate#getReason <em>Reason</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Reason</em>'.
+	 * @see ch.elexis.core.model.ISickCertificate#getReason()
+	 * @see #getISickCertificate()
+	 * @generated
+	 */
+	EAttribute getISickCertificate_Reason();
+
+	/**
+	 * Returns the meta object for the attribute '{@link ch.elexis.core.model.ISickCertificate#getNote <em>Note</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Note</em>'.
+	 * @see ch.elexis.core.model.ISickCertificate#getNote()
+	 * @see #getISickCertificate()
+	 * @generated
+	 */
+	EAttribute getISickCertificate_Note();
+
+	/**
 	 * Returns the meta object for class '{@link ch.elexis.core.model.IAppointment <em>IAppointment</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -11896,6 +12217,14 @@ public interface ModelPackage extends EPackage {
 		EReference ICONTACT__RELATED_CONTACTS = eINSTANCE.getIContact_RelatedContacts();
 
 		/**
+		 * The meta object literal for the '<em><b>Deceased</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute ICONTACT__DECEASED = eINSTANCE.getIContact_Deceased();
+
+		/**
 		 * The meta object literal for the '{@link ch.elexis.core.model.IPerson <em>IPerson</em>}' class.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
@@ -11968,6 +12297,14 @@ public interface ModelPackage extends EPackage {
 		 * @generated
 		 */
 		EReference IPERSON__LEGAL_GUARDIAN = eINSTANCE.getIPerson_LegalGuardian();
+
+		/**
+		 * The meta object literal for the '<em><b>Date Of Death</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute IPERSON__DATE_OF_DEATH = eINSTANCE.getIPerson_DateOfDeath();
 
 		/**
 		 * The meta object literal for the '{@link ch.elexis.core.model.IOrganization <em>IOrganization</em>}' class.
@@ -14838,6 +15175,88 @@ public interface ModelPackage extends EPackage {
 		 * @generated
 		 */
 		EReference IAPPOINTMENT_SERIES__ROOT_APPOINTMENT = eINSTANCE.getIAppointmentSeries_RootAppointment();
+
+		/**
+		 * The meta object literal for the '{@link ch.elexis.core.model.ISickCertificate <em>ISick Certificate</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see ch.elexis.core.model.ISickCertificate
+		 * @see ch.elexis.core.model.impl.ModelPackageImpl#getISickCertificate()
+		 * @generated
+		 */
+		EClass ISICK_CERTIFICATE = eINSTANCE.getISickCertificate();
+
+		/**
+		 * The meta object literal for the '<em><b>Patient</b></em>' reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference ISICK_CERTIFICATE__PATIENT = eINSTANCE.getISickCertificate_Patient();
+
+		/**
+		 * The meta object literal for the '<em><b>Coverage</b></em>' reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference ISICK_CERTIFICATE__COVERAGE = eINSTANCE.getISickCertificate_Coverage();
+
+		/**
+		 * The meta object literal for the '<em><b>Letter</b></em>' reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference ISICK_CERTIFICATE__LETTER = eINSTANCE.getISickCertificate_Letter();
+
+		/**
+		 * The meta object literal for the '<em><b>Percent</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute ISICK_CERTIFICATE__PERCENT = eINSTANCE.getISickCertificate_Percent();
+
+		/**
+		 * The meta object literal for the '<em><b>Date</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute ISICK_CERTIFICATE__DATE = eINSTANCE.getISickCertificate_Date();
+
+		/**
+		 * The meta object literal for the '<em><b>Start</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute ISICK_CERTIFICATE__START = eINSTANCE.getISickCertificate_Start();
+
+		/**
+		 * The meta object literal for the '<em><b>End</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute ISICK_CERTIFICATE__END = eINSTANCE.getISickCertificate_End();
+
+		/**
+		 * The meta object literal for the '<em><b>Reason</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute ISICK_CERTIFICATE__REASON = eINSTANCE.getISickCertificate_Reason();
+
+		/**
+		 * The meta object literal for the '<em><b>Note</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute ISICK_CERTIFICATE__NOTE = eINSTANCE.getISickCertificate_Note();
 
 		/**
 		 * The meta object literal for the '{@link ch.elexis.core.model.IAppointment <em>IAppointment</em>}' class.

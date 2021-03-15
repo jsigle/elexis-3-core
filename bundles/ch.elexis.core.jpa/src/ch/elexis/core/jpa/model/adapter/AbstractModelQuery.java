@@ -28,6 +28,7 @@ import ch.elexis.core.jpa.entities.EntityWithId;
 import ch.elexis.core.jpa.model.adapter.internal.PredicateGroupStack;
 import ch.elexis.core.jpa.model.adapter.internal.PredicateHandler;
 import ch.elexis.core.jpa.model.adapter.internal.QueryCursor;
+import ch.elexis.core.model.Identifiable;
 import ch.elexis.core.model.ModelPackage;
 import ch.elexis.core.services.IModelService;
 import ch.elexis.core.services.IQuery;
@@ -63,7 +64,7 @@ public abstract class AbstractModelQuery<T> implements IQuery<T> {
 	
 	private PredicateGroupStack predicateGroups;
 	private PredicateHandler predicateHandler;
-
+	
 	public AbstractModelQuery(Class<T> clazz, boolean refreshCache, EntityManager entityManager,
 		boolean includeDeleted){
 		this.clazz = clazz;
@@ -82,7 +83,7 @@ public abstract class AbstractModelQuery<T> implements IQuery<T> {
 		if (EntityWithDeleted.class.isAssignableFrom(entityClazz) && !includeDeleted) {
 			and(ModelPackage.Literals.DELETEABLE__DELETED, COMPARATOR.NOT_EQUALS, true);
 		}
-
+		
 		MappingEntry mappingForInterface = adapterFactory.getMappingForInterface(clazz);
 		mappingForInterface.applyQueryPrecondition(this);
 	}
@@ -124,6 +125,7 @@ public abstract class AbstractModelQuery<T> implements IQuery<T> {
 		predicateHandler.or(entityAttributeName, comparator, value, ignoreCase);
 	}
 	
+	@Override
 	public void orderBy(EStructuralFeature feature, ORDER order){
 		String entityAttributeName = predicateHandler.getAttributeName(feature, entityClazz);
 		@SuppressWarnings("rawtypes")
@@ -153,6 +155,7 @@ public abstract class AbstractModelQuery<T> implements IQuery<T> {
 		}
 	}
 	
+	@Override
 	public void orderBy(String fieldOrderBy, ORDER order){
 		@SuppressWarnings("rawtypes")
 		Optional<SingularAttribute> attribute =
@@ -208,6 +211,7 @@ public abstract class AbstractModelQuery<T> implements IQuery<T> {
 		return caseExpression;
 	}
 	
+	@Override
 	public void orderBy(Map<String, Object> caseContext, ORDER order){
 		if (caseContext != null && !caseContext.isEmpty()) {
 			Case<Object> caseExpression = getCaseExpression(caseContext);
@@ -312,8 +316,16 @@ public abstract class AbstractModelQuery<T> implements IQuery<T> {
 		List<T> result = execute();
 		if (!result.isEmpty()) {
 			if (result.size() > 1) {
-				LoggerFactory.getLogger(getClass())
-					.warn("Multiple results in list where single result expected, using first element", new Throwable());
+				StringBuilder info = new StringBuilder();
+				info.append(result.get(0).getClass().getName() + ": ");
+				for (T t : result) {
+					if (t instanceof Identifiable) {
+						info.append(((Identifiable) t).getId() + " ");
+					}
+				}
+				LoggerFactory.getLogger(getClass()).warn(
+					"Multiple results where single expected. Returning first element of [{}]",
+					info.toString(), new Throwable());
 			}
 			return Optional.of(result.get(0));
 		}
