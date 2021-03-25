@@ -286,9 +286,42 @@ public class Kontakt extends PersistentObject {
 	}
 	
 	/**
-	 * Synthesize the address lines to output from the entries in Kontakt k. added to implement the
-	 * output format desired for the copyAddressToClipboard() buttons.
+	 * 20120130js:
+	 * Synthesize the address lines to output from the entries in Kontakt k.
+	 * added to implement the output format desired for the copyAddressToClipboard()
+	 * buttons added to version 2.1.6.js as of 2012-01-28ff and moved to Kontakt.java now.
 	 * 
+	 * We might synthesize our own "Anschrift" for each Kontakt,
+	 * completely according to our own requirements,
+	 * OR use any of the methods defined for Kontakt like:
+	 * getLabel...(), getPostAnschrift, createStandardAnschrift, List<BezugsKontakt>... -
+	 * 
+	 * The Declaration of Kontakt with field definitions is available in Kontakt.java, please look
+	 * therein for additional details, please. Click-Right -> Declaration on Kontakt in Eclipse works.
+	 * You can also look above to see the fields that printList would use. 
+	 *
+	 * getPostAnschrift() does NOT use the System.getProperty("line.separator");
+	 * which I use below after the Fax number (and also in the calling code,
+	 * before a possibly succeeding address.
+	 * 
+	 * getPostAnschrift() instead replaces all line separators by
+	 * either \\n or space at the end of its run;
+	 * and I keep that code, +-multiline support herein
+	 * as well to maintain similar usage of both methods.
+	 * 
+	 * On a Win2K system, `that has the following effects when pasting the address(es) into various targets:
+	 * 
+	 * notepad: All elements of an address in one line, box characters instead of the newline (or cr?) character.
+	 * textpad: New line after each line within an address and between addresses.
+	 * winword 97: "new paragraph" after each line within an address, and before a succeeding address.
+	 * openoffice 2.0.3: "new line" after each line within an address; 
+	 *                   "new paragraph" after the Fax number and before a succeeding address.
+	 *
+	 * I could replace it via "line.separator", but as the above findings show, this is not urgently required.
+	 * And actually, it may eben be useful to have two separators (and even the "correct" behaviour, in openoffice, at least...). 
+	 */
+	
+	/*
 	 * @param multiline
 	 *            or single line output
 	 * @param including_phone
@@ -297,21 +330,11 @@ public class Kontakt extends PersistentObject {
 	 * @return string containing the needed information
 	 */
 	
-	/*
-	 * getPostAnschrift() does NOT use the System.getProperty("line.separator"); which I use bwlow
-	 * after the Fax number (and also in the calling code, before a possibly succeeding addresses.
-	 * getPostAnschrift() instead replaces all line separators by either \\n or space at the end of
-	 * its run; and I keep that code, +-multiline support herein as well to maintain similar usage
-	 * of both methods.
-	 * 
-	 * On a Win2K system, `that has the following effects when pasting the address(es) into various
-	 * targets: notepad: All elements of an address in one line, box characters instead of the
-	 * newline (or cr?) character. textpad: New line after each line within an address and between
-	 * addresses. winword 97: "new paragraph" after each line within an address, and before a
-	 * succeeding address. openoffice 2.0.3: "new line" after each line within an address;
-	 * "new paragraph" after the Fax number and before a succeeding address.
-	 */
 	public String getPostAnschriftPhoneFaxEmail(boolean multiline, boolean including_phone){
+
+		//N.B. from Javadoc:
+		//Strings are immutable once they have been created.
+		//Use StringBuffer if you want to modify its contents later on.
 		
 		StringBuffer thisAddress = new StringBuffer();
 		
@@ -343,6 +366,18 @@ public class Kontakt extends PersistentObject {
 		// selectedAddressesText.append(k.FLD_E_MAIL+System.getProperty("line.separator"));
 		// }
 		//
+		//
+		//BECAUSE OF THAT:
+		//
+		//System.out.print("jsdebug: k.FLD_FAX: "+k.FLD_FAX+"\n");						//returns: Fax
+		//System.out.print("jsdebug: k.FLD_E_MAIL: "+k.FLD_E_MAIL+"\n");				//returns: E-mail
+		//System.out.print("jsdebug: k.get(\"FLD_FAX\"): "+k.get("FLD_FAX")+"\n");		//returns: errror
+		//System.out.print("jsdebug: k.get(\"FLD_E_MAIL\"): "+k.get("FLD_E_MAIL")+"\n");//returns: error
+		//System.out.print("jsdebug: k.get(\"FLD_FAX\"): "+k.get("Fax")+"\n");			//returns: the contents of the field "Fax" (given current field labels)
+		//System.out.print("jsdebug: k.get(\"FLD_E_MAIL\"): "+k.get("E-Mail")+"\n");	//returns: the contents of the field "E-mail" (given current field labels)
+		//System.out.print("jsdebug: k.get(\"FLD_FAX\"): "+k.get(k.FLD_FAX)+"\n");		//returns: the contents of the field with the label stored in k.FLD_FAX
+		//System.out.print("jsdebug: k.get(\"FLD_E_MAIL\"): "+k.get(k.FLD_E_MAIL)+"\n");//returns: the contents of the field with the label stored in k.FLD_E_MAIL
+
 		if (including_phone) {
 			String thisAddressFLD_PHONE1 = (String) get(FLD_PHONE1);
 			if (!StringTool.isNothing(thisAddressFLD_PHONE1)) {
@@ -355,12 +390,13 @@ public class Kontakt extends PersistentObject {
 			}
 			
 			String thisAddressFLD_MOBILEPHONE = (String) get(FLD_MOBILEPHONE);
-			if (!StringTool.isNothing(thisAddressFLD_MOBILEPHONE)) {
-				// With a colon after the label:
-				thisAddress.append(FLD_MOBILEPHONE + ":" + StringTool.space
-					+ thisAddressFLD_MOBILEPHONE + System.getProperty("line.separator"));
-				// Without a colon after the label:
-				// selectedPatInfosText.append(","+StringTool.space+k.FLD_MOBILEPHONE+StringTool.space+thisAddressFLD_MOBILEPHONE);
+				if (!StringTool.isNothing(thisAddressFLD_MOBILEPHONE)) {
+					//With a colon after the label:
+					//THISWASACTIVEBEFORE20160726070050js: thisAddress.append(FLD_MOBILEPHONE+":"+StringTool.space+thisAddressFLD_MOBILEPHONE+System.getProperty("line.separator"));
+					//Without a colon after the label:
+					//selectedPatInfosText.append(","+StringTool.space+k.FLD_MOBILEPHONE+StringTool.space+thisAddressFLD_MOBILEPHONE);
+					//20160726070050js: Without the label NatelNr at all:
+					thisAddress.append(thisAddressFLD_MOBILEPHONE+System.getProperty("line.separator"));
 			}
 		}
 		
@@ -375,6 +411,8 @@ public class Kontakt extends PersistentObject {
 		}
 		
 		String an = thisAddress.toString();
+		//This code adopted from getPostanschrift() above to maintain compatible usage,
+		//but might be changed to usage of System.getProperty("line.separator") instead if necessary:
 		an = an.replaceAll("[\\r\\n]\\n", StringTool.lf); //$NON-NLS-1$
 		return multiline == true ? an : an.replaceAll("\\n", StringTool.space); //$NON-NLS-1$
 	}
