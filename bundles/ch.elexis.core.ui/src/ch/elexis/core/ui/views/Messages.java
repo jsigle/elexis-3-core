@@ -291,6 +291,7 @@ public class Messages {
 	public static String KontakteView_delete = ch.elexis.core.l10n.Messages.KontakteView_delete;
 	public static String KontakteView_duplicate = ch.elexis.core.l10n.Messages.KontakteView_duplicate;
 	public static String KontakteView_tidySelectedAddresses = ch.elexis.core.l10n.Messages.KontakteView_tidySelectedAddresses;
+	public static String KontakteView_tidySelectedAddressesLong = ch.elexis.core.l10n.Messages.KontakteView_tidySelectedAddressesLong;
 	public static String KontakteView_copySelectedContactInfosToClipboard = ch.elexis.core.l10n.Messages.KontakteView_copySelectedContactInfosToClipboard;
 	public static String KontakteView_copySelectedAddressesToClipboard = ch.elexis.core.l10n.Messages.KontakteView_copySelectedAddressesToClipboard;
 	public static String KontakteView_SalutationF = ch.elexis.core.l10n.Messages.KontakteView_SalutationF;
@@ -412,6 +413,8 @@ public class Messages {
 	public static String Patientenblatt2_balance = ch.elexis.core.l10n.Messages.Patientenblatt2_balance;
 	public static String Patientenblatt2_birthdate = ch.elexis.core.l10n.Messages.Patientenblatt2_birthdate;
 	public static String Patientenblatt2_civilState = ch.elexis.core.l10n.Messages.Patientenblatt2_civilState;
+	public static String Patientenblatt2_copySelectedAddressesToClipboard = ch.elexis.core.l10n.Messages.Patientenblatt2_copySelectedAddressesToClipboard;
+	public static String Patientenblatt2_copySelectedContactInfosToClipboard = ch.elexis.core.l10n.Messages.Patientenblatt2_copySelectedContactInfosToClipboard;
 	public static String Patientenblatt2_contactForAdditionalAddress = ch.elexis.core.l10n.Messages.Patientenblatt2_contactForAdditionalAddress;
 	public static String Patientenblatt2_diagnosesLbl = ch.elexis.core.l10n.Messages.Patientenblatt2_diagnosesLbl;
 	public static String Patientenblatt2_email = ch.elexis.core.l10n.Messages.Patientenblatt2_email;

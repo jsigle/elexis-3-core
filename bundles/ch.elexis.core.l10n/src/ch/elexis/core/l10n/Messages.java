@@ -1102,6 +1102,7 @@ public class Messages extends NLS {
 	public static String KontakteView_delete;
 	public static String KontakteView_duplicate;
 	public static String KontakteView_tidySelectedAddresses;
+	public static String KontakteView_tidySelectedAddressesLong;
 	public static String KontakteView_copySelectedContactInfosToClipboard;
 	public static String KontakteView_copySelectedAddressesToClipboard;
 	public static String KontakteView_SalutationF;
@@ -1223,6 +1224,8 @@ public class Messages extends NLS {
 	public static String Patientenblatt2_birthdate;
 	public static String Patientenblatt2_civilState;
 	public static String Patientenblatt2_contactForAdditionalAddress;
+	public static String Patientenblatt2_copySelectedAddressesToClipboard;
+	public static String Patientenblatt2_copySelectedContactInfosToClipboard;
 	public static String Patientenblatt2_diagnosesLbl;
 	public static String Patientenblatt2_email;
 	public static String Patientenblatt2_fax;
