@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2005-2011, G. Weirich and Elexis
- * Portions (c) 2012, Joerg M. Sigle (js, jsigle)
+ * Portions (c) 2012-2021, Joerg M. Sigle (js, jsigle)
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -67,7 +67,40 @@ import ch.elexis.core.ui.util.viewers.DefaultLabelProvider;
 import ch.elexis.core.ui.util.viewers.SimpleWidgetProvider;
 import ch.elexis.core.ui.util.viewers.ViewerConfigurer;
 import ch.elexis.core.ui.util.viewers.ViewerConfigurer.ControlFieldListener;
+
+//TODO: 20210324js: Consider allowance of additional chars per line.
+//Readability of code and comments suffers extremely
+//from short lines. Even on 80x25 terminals,
+//there is horizontal scrolling, and hardly anyone
+//will still use an 80 chars/line printer for this.
+
+//TODO: 20210324js: Pruefen, ob folgender Kommentar aus 2.1.7js erledigt ist, oder aufarbeiten.
+/* 
+ * 20210324js: Kommentar hierher restauriert. Quelle:
+ * blackbox:/mnt/sdb3/Elexis-workspace/elexis-2.1.7-20130523/
+ * elexis-bootstrap-js-201712191036-last-20130605based-with-MSWord_js-as-used-by-JH-since-201701-before-gitpush/
+ * elexis-base/ch.elexis/src/ch/elexis/views/PatientenListeView.java
+ * 
+ * Der Kommentar bezog sich auf die beiden Dateien:
+ * import ch.elexis.data.Messages;
+ * import ch.elexis.views.Messages;
+ * Letzere wurde von mir hier importiert, aktuell wahrscheinlich ersetzt durch:
+ * import ch.elexis.core.ui.views.Messages;
+ * --
+ * 20120214js: Hier ist mglw. nicht data.Messages, sondern views.Messages noetig.
+ * Jedenfalls fehlt im ersten z.B. PatientenListeView.PatientNr etc.,
+ * waehrend das im zweiten dann definiert ist. Ohne diese Strings erscheinen
+ * in der GUI von PatientenListeView die entsprechenden Identifier mit Ausdrufezeichen
+ * drumherum, jedoch nicht der gewuenschte Inhalt.
+ * Nach dem Austausch fehlen allerdings Angaben wie Kontakt.Salutation,
+ * die von dem neuen Code zum Kopieren von Patientenanschriften und -Infos in die Zwischenablage
+ * benoetigt wuerden! Deshalb funktionieren  die entsprechenden neuen Funktionen so nicht mehr.
+ * beide koennen nicht gleichzeitig (ohne Namensdiversifikation) importiert werden.
+ * Und JA, nach dem Austausch erscheinen die Labels in PatientListeView.java korrekt.
+ * 20120214js Ende.
+ */
 import ch.elexis.core.ui.views.Messages;
+
 import ch.elexis.data.Anwender;
 import ch.elexis.data.Kontakt;
 import ch.elexis.data.Patient;
@@ -398,9 +431,9 @@ public class PatientenListeView extends ViewPart implements IActivationListener,
 		/*
 		 * Copy selected PatientInfos to the clipboard, so it/they can be easily
 		 * pasted into a letter for printing. An action with identical / similar
-		 * code has also been added above, and to KontakteView.java. Detailed
-		 * comments regarding field access, and output including used newline/cr
-		 * characters are maintained only there.
+		 * code has also been added above, and to KontakteView.java.
+		 * Detailed comments regarding field access, and output including
+		 * used newline/cr characters are maintained only there.
 		 */
 		copySelectedPatInfosToClipboardAction = new Action(
 				Messages.PatientenListeView_copySelectedPatInfosToClipboard) { // $NON-NLS-1$
@@ -416,17 +449,16 @@ public class PatientenListeView extends ViewPart implements IActivationListener,
 				// Convert the selected addresses into a list
 
 				/*
-				 * ToDo: OK, vielleicht wäre es schöner, in Person.java
-				 * (+-Patient.java?) eine Funktion getPostAnschriftFaxEmail() zu
-				 * ergänzen...
+				 * ToDo: OK, vielleicht waere es schoener,
+				 * in Person.java (+-Patient.java?) eine Funktion
+				 * getPostAnschriftFaxEmail() zu ergaenzen...
 				 */
+				
 				// TODO: PatientenListeView.java, Bitte in Person.java
-				// getPersonalia() durch
-				// abgewandelte Fassung komplementieren und den entsprechenden
-				// Code dorthin verlagern.
-				// TODO: Bitte Fehlermeldung Elexis-Konform gestalten, ggf.
-				// Automatik /
-				// assistierte Fehlerbehebung hinzufügen.
+				// getPersonalia() durch abgewandelte Fassung komplementieren
+				// und den entsprechenden Code dorthin verlagern.
+				// TODO: Bitte Fehlermeldung Elexis-Konform gestalten,
+				// ggf. Automatik / assistierte Fehlerbehebung hinzufuegen.
 
 				StringBuffer selectedPatInfosText = new StringBuffer();
 
@@ -436,8 +468,7 @@ public class PatientenListeView extends ViewPart implements IActivationListener,
 				// you should also enable the selectedPatInfosText.setLength(0)
 				// line below,
 				// and enable output of selectedPatInfosText even for the case
-				// of an empty
-				// selection further below.
+				// of an empty selection further below.
 				// selectedPatInfosText.append("jsdebug: Sorry, your selection
 				// is empty.");
 
@@ -447,23 +478,22 @@ public class PatientenListeView extends ViewPart implements IActivationListener,
 					// includes "+sel.length+"
 					// element(s):"+System.getProperty("line.separator"));
 
-					// In PateintenListeView.java, only zero or one patients can
-					// be selected at
-					// a time.
+					// In PateintenListeView.java,
+					// only zero or one patients can be selected at a time.
 					// Consequently, the for-loop inherited from
-					// KontakteView.java is a bit of
-					// an overkill right here.
+					// KontakteView.java is a bit of overkill right here.
 					for (int i = 0; i < sel.length; i++) {
 
 						/*
 						 * Patient ist eine Person, das ist Kontakt mit
-						 * zusätzlichen Feldern (Kontakt.java, Person.java) In
-						 * KontakteView.java stand hier: Kontakt k = (Kontakt)
-						 * sel[i] In PatientenListeView.java verwende ich
-						 * dieselbe Variablenbezeichnung k, damit ich unten
-						 * nicht alle Feldeinbindungen aktualisieren muss - und
-						 * damit später Änderungen in KontakteView.java schnell
-						 * hierher übernommen werden können.
+						 * zusaetzlichen Feldern (Kontakt.java, Person.java)
+						 * In KontakteView.java stand hier:
+						 * Kontakt k = (Kontakt) sel[i]
+						 * In PatientenListeView.java verwende ich dieselbe
+						 * Variablenbezeichnung k, damit ich unten nicht alle 
+						 * Feldeinbindungen aktualisieren muss - und damit
+						 * spaeter Aenderungen in KontakteView.java schnell
+						 * hierher uebernommen werden koennen.
 						 */
 
 						Patient k = (Patient) sel[i];
@@ -479,44 +509,40 @@ public class PatientenListeView extends ViewPart implements IActivationListener,
 						// Kontakt.createStdAnschrift for a
 						// different purpose/layout:
 						// ggf. hier zu Person.getPersonalia() eine abgewandelte
-						// Fassung
-						// hinzufügen und von hier aus aufrufen.
+						// Fassung hinzufuegen und von hier aus aufrufen.
 
 						// Highly similar (but still different) code is now
-						// added
-						// to KontakteView.java
+						// added to KontakteView.java
 						// CopySelectedContactInfoToClipboard...
 						// 201202161313js
 
 						if (k.istPerson()) {
-							// TODO default salutation might be configurable (or
-							// a
-							// "Sex missing!" Info might appear) js
+							// TODO default salutation might be configurable
+							// (or a "Sex missing!" Info might appear) js
 							String salutation;
 							if (k.getGeschlecht().equals(Person.MALE)) {
 								salutation = Messages.KontakteView_SalutationM; // $NON-NLS-1$
-							} else // We do not use any default salutation for
-									// unknown sex to
-							// avoid errors!
+							} else 
+							// We do not use any default salutation for
+							// unknown sex to avoid errors!
 							if (k.getGeschlecht().equals(Person.FEMALE)) {
 								salutation = Messages.KontakteView_SalutationF; // $NON-NLS-1$
 							} else {
 								salutation = ""; //$NON-NLS-1$
 							}
-							selectedPatInfosText.append(salutation);
-							selectedPatInfosText.append(StringTool.space);
+							if (!StringTool.isNothing(salutation)) {
+								selectedPatInfosText.append(salutation).append(StringTool.space);
+							}
 
 							String titel = k.get(Person.TITLE); // $NON-NLS-1$
 							if (!StringTool.isNothing(titel)) {
 								selectedPatInfosText.append(titel).append(StringTool.space);
 							}
 							// A comma between Family Name and Given Name would
-							// be generally
-							// helpful to reliably tell them apart:
+							// be generally helpful to reliably tell them apart:
 							// selectedPatInfosText.append(k.getName()+","+StringTool.space+k.getVorname());
-							// But Jürg Hamacher prefers this in his letters
-							// without a comma in
-							// between:
+							// But Juerg Hamacher prefers this in his letters
+							// without a comma in between:
 							// selectedPatInfosText.append(k.getName()+StringTool.space+k.getVorname());
 							// Now, I only use a spacer, if the first field is
 							// not empty!
@@ -531,13 +557,11 @@ public class PatientenListeView extends ViewPart implements IActivationListener,
 							String thisPatientBIRTHDATE = k.get(Person.BIRTHDATE);
 							if (!StringTool.isNothing(thisPatientBIRTHDATE)) {
 								// This would add the term "geb." (born on the)
-								// before the date
-								// of birth:
+								// before the date of birth:
 								// selectedPatInfosText.append(","+StringTool.space+"geb."+StringTool.space+new
 								// TimeTool(thisPatientBIRTHDATE).toString(TimeTool.DATE_GER));
-								// But Jürg Hamacher prefers the patient
-								// information in his
-								// letters without that term:
+								// But Juerg Hamacher prefers the patient
+								// information in his letters without that term:
 								selectedPatInfosText.append("," + StringTool.space
 										+ new TimeTool(thisPatientBIRTHDATE).toString(TimeTool.DATE_GER));
 							}
@@ -556,32 +580,31 @@ public class PatientenListeView extends ViewPart implements IActivationListener,
 							if (!StringTool.isNothing(thisAddressFLD_ZIP)) {
 								if (StringTool.isNothing(thisAddressFLD_COUNTRY)) {
 									selectedPatInfosText.append("," + StringTool.space);
-								}
-								;
-								selectedPatInfosText.append(thisAddressFLD_ZIP);
-							}
-							;
+								};
+								selectedPatInfosText.
+									append(thisAddressFLD_ZIP);
+							};
 
 							String thisAddressFLD_PLACE = k.get(Kontakt.FLD_PLACE);
 							if (!StringTool.isNothing(thisAddressFLD_PLACE)) {
 								if (StringTool.isNothing(thisAddressFLD_COUNTRY)
 										&& StringTool.isNothing(thisAddressFLD_ZIP)) {
 									selectedPatInfosText.append(",");
-								}
-								;
-								selectedPatInfosText.append(StringTool.space + thisAddressFLD_PLACE);
+								};
+								selectedPatInfosText.append(
+									StringTool.space + thisAddressFLD_PLACE);
 							}
 
 							String thisAddressFLD_PHONE1 = k.get(Kontakt.FLD_PHONE1);
 							if (!StringTool.isNothing(thisAddressFLD_PHONE1)) {
-								selectedPatInfosText
-										.append("," + StringTool.space + StringTool.space + thisAddressFLD_PHONE1);
+								selectedPatInfosText.append("," 
+									+ StringTool.space + thisAddressFLD_PHONE1);
 							}
 
 							String thisAddressFLD_PHONE2 = k.get(Kontakt.FLD_PHONE2);
 							if (!StringTool.isNothing(thisAddressFLD_PHONE2)) {
-								selectedPatInfosText
-										.append("," + StringTool.space + StringTool.space + thisAddressFLD_PHONE2);
+								selectedPatInfosText.append("," 
+									+ StringTool.space + thisAddressFLD_PHONE2);
 							}
 
 							String thisAddressFLD_MOBILEPHONE = k.get(Kontakt.FLD_MOBILEPHONE);
@@ -589,8 +612,14 @@ public class PatientenListeView extends ViewPart implements IActivationListener,
 								// With a colon after the label:
 								// selectedPatInfosText.append(","+StringTool.space+k.FLD_MOBILEPHONE+":"+StringTool.space+thisAddressFLD_MOBILEPHONE);
 								// Without a colon after the label:
-								selectedPatInfosText.append("," + StringTool.space + Kontakt.FLD_MOBILEPHONE
-										+ StringTool.space + thisAddressFLD_MOBILEPHONE);
+								//THISWASACTIVEBEFORE20160726070050js:
+								//selectedPatInfosText.append("," 
+								//	+ StringTool.space + Kontakt.FLD_MOBILEPHONE
+								//	+ StringTool.space + thisAddressFLD_MOBILEPHONE);
+								//20160726070050js: Without the label NatelNr at all:
+								//202103251324js: But for patients: WITH the Mobile phone number!
+								selectedPatInfosText.append("," 
+									+ StringTool.space + thisAddressFLD_MOBILEPHONE);
 							}
 
 							String thisAddressFLD_FAX = k.get(Kontakt.FLD_FAX);
@@ -598,42 +627,77 @@ public class PatientenListeView extends ViewPart implements IActivationListener,
 								// With a colon after the label:
 								// selectedPatInfosText.append(","+StringTool.space+k.FLD_FAX+":"+StringTool.space+thisAddressFLD_FAX);
 								// Without a colon after the label:
-								selectedPatInfosText.append("," + StringTool.space + Kontakt.FLD_FAX + StringTool.space
-										+ thisAddressFLD_FAX);
+								selectedPatInfosText.append("," 
+									+ StringTool.space + Kontakt.FLD_FAX 
+									+ StringTool.space + thisAddressFLD_FAX);
 							}
 
 							String thisAddressFLD_E_MAIL = k.get(Kontakt.FLD_E_MAIL);
 							if (!StringTool.isNothing(thisAddressFLD_E_MAIL)) {
-								selectedPatInfosText.append("," + StringTool.space + thisAddressFLD_E_MAIL);
+								selectedPatInfosText.append("," 
+									+ StringTool.space + thisAddressFLD_E_MAIL);
 							}
 						} else {
 							selectedPatInfosText.append(
 									"Fehler: Bei diesem Patienten ist das Flag \"Person\" nicht gesetzt! Bitte korrigieren!\n");
 							// TODO: Fehler: Bei diesem Patienten ist das Flag
 							// \"Person\" nicht gesetzt!\n");
-							// TODO: Bitte Fehlermeldung Elexis-Konform
-							// gestalten, ggf.
-							// Automatik / assistierte Fehlerbehebung
-							// hinzufügen.\n");
+							// TODO: Bitte Fehlermeldung Elexis-Konform gestalten,
+							// ggf. Automatik / assistierte Fehlerbehebung hinzufuegen.\n");
 						}
 
-						// Add another empty line (or rather: paragraph), if at
-						// least one more
-						// address will follow.
+						// Add another empty line (or rather: paragraph),
+						// if at least one more address will follow.
 						if (i < sel.length - 1) {
-							selectedPatInfosText.append(System.getProperty("line.separator"));
+							selectedPatInfosText.append(
+									System.getProperty("line.separator"));
 
 						}
 					} // for each element in sel do
 
 					/*
+					 * 20120128js:
 					 * The following code portions can be moved down behind the
 					 * next } if you want to produce debugging output or empty
 					 * the clipboard even when NO addresses have been selected.
 					 * (However, I may disable the toolbar icon / menu entry for
 					 * this action in that case later on.)
 					 */
+					
+					//201305260049js:
+					//For Patientenblatt2.java, PatientenListeView.java, KontakteView.java
+					//This function was primarily introduced because the above algorithm
+					//returns a double space in the phone number area. Maybe that comes from
+					//a field containing a space, or is truly generated in the code above.
+					
+					//Right now I have no time, and the postprocessing has the advantage of correcting unwanted
+					//content inside the fields as well. So I only add this today.
+					
+					// TODO Please look up the reason for the extra space above - 20210325js: DONE, was produced there, REMOVED.
+					// TODO Please make sure that multibyte Unicode characters are correctly handled below.
+					// TODO Add similar postprocessing to copySelectedAdressesToClipboard of all three .java files
+					// TODO Move the processing into a separate method/function, when the copy... methods are refactored.
+						
+					//Postprocess selectedPatInfosText:
+					//Remove any leading or trailing spaces;
+					//Replace any " ," by ",";
+					//Replace any " ." by ".";
+					//Replace any multiple spaces by single spaces.
+					int n=0;
+					while (n<selectedPatInfosText.length()) {
+						if (   selectedPatInfosText.codePointAt(n)==StringTool.space.codePointAt(0)
+							&& ( n==selectedPatInfosText.length()
+								|| selectedPatInfosText.codePointAt(n+1)==(",").codePointAt(0)
+								|| selectedPatInfosText.codePointAt(n+1)==(".").codePointAt(0)
+								|| selectedPatInfosText.codePointAt(n+1)==StringTool.space.codePointAt(0) )
+							){ 
+							selectedPatInfosText.deleteCharAt(n);
+							} else { 
+							n=n+1;}
+					};				
 
+				    //System.out.print("jsdebug: selectedPatInfosText: \n"+selectedPatInfosText+"\n");
+					
 					// Adopted from BestellView.exportClipboardAction:
 					// Copy some generated object.toString() to the clipoard
 
@@ -649,8 +713,9 @@ public class PatientenListeView extends ViewPart implements IActivationListener,
 		};
 
 		/*
+		 * 201201280147js:
 		 * Copy selected address(es) to the clipboard, so it/they can be easily
-		 * pasted into a letter for printing. An actions with identical /
+		 * pasted into a letter for printing. An action with identical /
 		 * similar code has also been added below, and to KontakteView.java.
 		 * Detailed comments regarding field access, and output including used
 		 * newline/cr characters are maintained only there.
@@ -676,8 +741,7 @@ public class PatientenListeView extends ViewPart implements IActivationListener,
 				// you should also enable the selectedAddressesText.setLength(0)
 				// line below,
 				// and enable output of selectedAddressesText even for the case
-				// of an empty
-				// selection further below.
+				// of an empty selection further below.
 				// selectedAddressesText.append("jsdebug: Sorry, your selection
 				// is empty.");
 
@@ -687,23 +751,21 @@ public class PatientenListeView extends ViewPart implements IActivationListener,
 					// includes "+sel.length+"
 					// element(s):"+System.getProperty("line.separator"));
 
-					// In PateintenListeView.java, only zero or one patients can
-					// be selected at
-					// a time.
-					// Consequently, the for-loop inherited from
-					// KontakteView.java is a bit of
-					// an overkill right here.
+					// In PateintenListeView.java, only zero or one patients
+					// can be selected at a time. Consequently, the for-loop
+					// inherited from KontakteView.java is a bit of an overkill
+					// right here.
 					for (int i = 0; i < sel.length; i++) {
 
 						/*
 						 * Patient ist eine Person, das ist Kontakt mit
-						 * zusätzlichen Feldern (Kontakt.java, Person.java) In
+						 * zusaetzlichen Feldern (Kontakt.java, Person.java) In
 						 * KontakteView.java stand hier: Kontakt k = (Kontakt)
 						 * sel[i] In PatientenListeView.java verwende ich
 						 * dieselbe Variablenbezeichnung k, damit ich unten
 						 * nicht alle Feldeinbindungen aktualisieren muss - und
-						 * damit später Änderungen in KontakteView.java schnell
-						 * hierher übernommen werden können.
+						 * damit spaeter Aenderungen in KontakteView.java schnell
+						 * hierher uebernommen werden koennen.
 						 */
 
 						Patient k = (Patient) sel[i];
@@ -719,19 +781,16 @@ public class PatientenListeView extends ViewPart implements IActivationListener,
 						// "+Integer.toString(i)+"
 						// "+k.toString()+System.getProperty("line.separator"));
 
-						// getPostAnschriftPhoneFaxEmail() already returns a
-						// line separator
-						// after the address
-						// The first parameter controls multiline or single line
-						// output
-						// The second parameter controls whether the phone
-						// numbers shall be
-						// included
+						// getPostAnschriftPhoneFaxEmail()
+						// already returns a line separator after the address
+						// The first parameter controls
+						// multiline or single line output
+						// The second parameter controls
+						// whether the phone numbers shall be included
 						selectedAddressesText.append(k.getPostAnschriftPhoneFaxEmail(true, true));
 
 						// Add another empty line (or rather: paragraph), if at
-						// least one more
-						// address will follow.
+						// least one more address will follow.
 						if (i < sel.length - 1) {
 							selectedAddressesText.append(System.getProperty("line.separator"));
 
@@ -739,6 +798,7 @@ public class PatientenListeView extends ViewPart implements IActivationListener,
 					} // for each element in sel do
 
 					/*
+					 * 20120130js:
 					 * I would prefer to move the following code portions down
 					 * behind the "if sel not empty" block, so that (a)
 					 * debugging output can be produced and (b) the clipboard
