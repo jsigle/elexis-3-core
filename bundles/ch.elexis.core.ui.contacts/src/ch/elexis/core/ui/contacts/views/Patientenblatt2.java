@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2008-2010, G. Weirich and Elexis
- * Portions (c) 2012-2013, Joerg M. Sigle (js, jsigle)
+ * Portions (c) 2012-2021, Joerg M. Sigle (js, jsigle)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -903,6 +903,8 @@ public class Patientenblatt2 extends Composite implements IUnlockable {
 		};
 		
 		/*
+		 * 201303141833js adopted from KontakteView.java
+		 * 201202161220js:
 		 * adopted from KontakteView.java Copy selected contact data (complete)
 		 * to the clipboard, so it/they can be easily pasted into a target
 		 * document for various further usage. This variant produces a more
@@ -912,10 +914,10 @@ public class Patientenblatt2 extends Composite implements IUnlockable {
 		 * code has also been added to PatientenListeView.java
 		 */
 		copySelectedContactInfosToClipboardAction =
-			new Action(Messages.KontakteView_copySelectedContactInfosToClipboard) { // $NON-NLS-1$
+			new Action(Messages.Patientenblatt2_copySelectedContactInfosToClipboard) { // $NON-NLS-1$
 				{
 					setImageDescriptor(Images.IMG_CLIPBOARD.getImageDescriptor());
-					setToolTipText(Messages.KontakteView_copySelectedContactInfosToClipboard); // $NON-NLS-1$
+					setToolTipText(Messages.Patientenblatt2_copySelectedContactInfosToClipboard); // $NON-NLS-1$
 				}
 				
 				@Override
@@ -926,46 +928,45 @@ public class Patientenblatt2 extends Composite implements IUnlockable {
 					
 					StringBuffer SelectedContactInfosText = new StringBuffer();
 					
-					// Here's a handling difference between Patientenblatt2.java and
-					// KontakteView.java:
-					// Apparently, the method getSelection() from ListDisplay.java
-					// returns only the
-					// first selected entry.
-					// Actually, in the List of addresses in section "Hinzu", it is
-					// only possible to
-					// select one address at a time.
-					// Moreover, it doesn't return Object[], but T, which is a list
-					// to be displayed
-					// with GUI, extending composite.
-					// Object[] sel = inpZusatzAdresse.getSelection(); //This would
-					// not work for
-					// inpZusatzAdresse
-					BezugsKontakt sel = (BezugsKontakt) inpZusatzAdresse.getSelection(); // This
-					// works, but returns only one entry.
+					// Here's a handling difference between
+					// Patientenblatt2.java and KontakteView.java:
+					// Apparently, the method getSelection() from
+					// ListDisplay.java returns only the first selected entry.
+					// Actually, in the List of addresses in section "Hinzu",
+					// it is only possible to select one address at a time.
+					// Moreover, it doesn't return Object[], but T, which is
+					// a list to be displayed with GUI, extending composite.
+
+					// Object[] sel = inpZusatzAdresse.getSelection();
+					//This would not work for inpZusatzAdresse
+
+					BezugsKontakt sel = (BezugsKontakt) inpZusatzAdresse.getSelection();
+					// This works, but returns only one entry.
 					
 					// If you enable the following line for debug output,
 					// you should also enable the
 					// SelectedContactInfosText.setLength(0) line below,
-					// and enable output of SelectedContactInfosText even for the
-					// case of an empty
+					// and enable output of SelectedContactInfosText
+					// even for the case of an empty
 					// selection further below.
 					// SelectedContactInfosText.append("jsdebug: Sorry, your
 					// selection is empty.");
 					
-					// if (sel != null && sel.length > 0) { //This would not work
-					// for
-					// inpZusatzAdresse
+					// if (sel != null && sel.length > 0) {
+					//This would not work for inpZusatzAdresse
+					
 					if (sel != null) {
 						// SelectedContactInfosText.setLength(0);
 						// SelectedContactInfosText.append("jsdebug: Your selection
 						// includes "+sel.length+"
 						// element(s):"+System.getProperty("line.separator"));
 						
-						// for (int i = 0; i < sel.length; i++) { //This would not
-						// work for
-						// inpZusatzAdresse
-						// Kontakt k = (Kontakt) sel[i]; //This would not work for
-						// inpZusatzAdresse
+						// for (int i = 0; i < sel.length; i++) {
+						//This would not work for inpZusatzAdresse
+						
+						// Kontakt k = (Kontakt) sel[i];
+						//This would not work for inpZusatzAdresse
+						
 						Kontakt k = sel.getBezugsKontakt();
 						
 						// System.out.print("jsdebug:
@@ -976,26 +977,21 @@ public class Patientenblatt2 extends Composite implements IUnlockable {
 						// Kontakt.createStdAnschrift for a
 						// different purpose/layout:
 						// ggf. hier zu Person.getPersonalia() eine abgewandelte
-						// Fassung hinzufügen
-						// und von hier aus aufrufen.
+						// Fassung hinzufügen und von hier aus aufrufen.
 						
 						// This highly similar (but still different) code has been
-						// adopted from my
-						// addition
-						// to PatientenListeView.java
+						// adopted from my addition to PatientenListeView.java
 						// CopySelectedPatInfosToClipboard...
 						// 201202161313js
 						
 						// optional code; this could be made configurable. For now:
-						// disabled by if
-						// (false)...
+						// disabled by if (false)...
+						
 						if (false) {
 							// I put the field of "Kürzel" in front. It contains a
-							// Patient ID
-							// number,
-							// and optionally kk... for health insurances, or vn
-							// initials as Vorname
-							// Nachname for physicians.
+							// Patient ID number, and optionally
+							// kk... for health insurances,
+							// or vn initials as Vorname Nachname for physicians.
 							String thisKontaktFLD_SHORT_LABEL = k.get(k.FLD_SHORT_LABEL); // $NON-NLS-1$
 							if (!StringTool.isNothing(thisKontaktFLD_SHORT_LABEL)) {
 								SelectedContactInfosText.append(thisKontaktFLD_SHORT_LABEL)
@@ -1005,26 +1001,29 @@ public class Patientenblatt2 extends Composite implements IUnlockable {
 						
 						if (k.istPerson()) {
 							// Here, we need to look at the Person variant of a
-							// Kontakt to obtain
-							// their sex; 201202161326js
+							// Kontakt to obtain their sex; 201202161326js
 							// Kontakt cannot simply be cast to Person - if we try,
-							// we'll throw an
-							// error, and the remainder of this action will be
-							// ignored.
+							// we'll throw an error, and the remainder
+							// of this action will be ignored.
 							// Person p = (Person) sel[i]; //THIS WILL NOT WORK.
 							// So obtain the corresponding Person for a Kontakt via
 							// the ID:
+							
 							Person p = Person.load(k.getId());
 							
+							//20160726070050js: For the short version of contact data copied from
+							//the list of people linked to a patient (usually, his/her physicians etc.),
+							//we want NEITHER the salutation (Herr/Frau) NOR the mobile phone number appear.
+							//So these sections are commented out here.
+							/*
+							 * 
 							String salutation;
-							// TODO default salutation might be configurable (or a
-							// "Sex missing!"
-							// Info might appear) js
+							// TODO default salutation might be configurable
+							// (or a "Sex missing!" Info might appear) js
 							if (p.getGeschlecht().equals(Person.MALE)) {
 								salutation = Messages.KontakteView_SalutationM; // $NON-NLS-1$
 							} else // We do not use any default salutation for
-								// unknown sex to avoid
-									// errors!
+								// unknown sex to avoid errors!
 							if (p.getGeschlecht().equals(Person.FEMALE)) {
 								salutation = Messages.KontakteView_SalutationF; // $NON-NLS-1$
 							} else {
@@ -1032,30 +1031,27 @@ public class Patientenblatt2 extends Composite implements IUnlockable {
 							}
 							
 							if (!StringTool.isNothing(salutation)) { // salutation
-																		// should
-																		// currently
-																		// never be empty, but paranoia...
+								// should currently never be empty, but paranoia...
 								SelectedContactInfosText.append(salutation);
 								SelectedContactInfosText.append(StringTool.space);
 							}
+							*
+							*/
 							
 							String titel = p.get(p.TITLE); // $NON-NLS-1$
 							if (!StringTool.isNothing(titel)) {
 								SelectedContactInfosText.append(titel).append(StringTool.space);
 							}
 							// A comma between Family Name and Given Name would be
-							// generally helpful
-							// to reliably tell them apart:
+							// generally helpful to reliably tell them apart:
 							// SelectedContactInfosText.append(k.getName()+","+StringTool.space+k.getVorname());
-							// But Jürg Hamacher prefers this in his letters without
-							// a comma in
-							// between:
+							// But Juerg Hamacher prefers this in his letters without
+							// a comma in between:
 							// SelectedContactInfosText.append(p.getName()+StringTool.space+p.getVorname());
 							// Whereas I use the above variant for
 							// PatientenListeView.java;
 							// I put the Vorname first in KontakteView. And I only
-							// use a spacer, if
-							// the first field is not empty!
+							// use a spacer, if the first field is not empty!
 							// SelectedContactInfosText.append(p.getVorname()+StringTool.space+p.getName());
 							if (!StringTool.isNothing(p.getVorname())) {
 								SelectedContactInfosText.append(p.getVorname() + StringTool.space);
@@ -1082,13 +1078,11 @@ public class Patientenblatt2 extends Composite implements IUnlockable {
 							String thisPatientBIRTHDATE = (String) p.get(p.BIRTHDATE);
 							if (!StringTool.isNothing(thisPatientBIRTHDATE)) {
 								// This would add the term "geb." (born on the)
-								// before the date of
-								// birth:
+								// before the date of birth:
 								// SelectedContactInfosText.append(","+StringTool.space+"geb."+StringTool.space+new
 								// TimeTool(thisPatientBIRTHDATE).toString(TimeTool.DATE_GER));
-								// But Jürg Hamacher prefers the patient information
-								// in his letters
-								// without that term:
+								// But Juerg Hamacher prefers the patient information
+								// in his letters without that term:
 								SelectedContactInfosText.append(
 									"," + StringTool.space + new TimeTool(thisPatientBIRTHDATE)
 										.toString(TimeTool.DATE_GER));
@@ -1131,11 +1125,9 @@ public class Patientenblatt2 extends Composite implements IUnlockable {
 						if (!StringTool.isNothing(thisAddressFLD_ZIP)) {
 							if (StringTool.isNothing(thisAddressFLD_COUNTRY)) {
 								SelectedContactInfosText.append("," + StringTool.space);
-							}
-							;
+							};
 							SelectedContactInfosText.append(thisAddressFLD_ZIP);
-						}
-						;
+						};
 						
 						String thisAddressFLD_PLACE = (String) k.get(k.FLD_PLACE);
 						if (!StringTool.isNothing(thisAddressFLD_PLACE)) {
@@ -1151,15 +1143,21 @@ public class Patientenblatt2 extends Composite implements IUnlockable {
 						String thisAddressFLD_PHONE1 = (String) k.get(k.FLD_PHONE1);
 						if (!StringTool.isNothing(thisAddressFLD_PHONE1)) {
 							SelectedContactInfosText.append(
-								"," + StringTool.space + StringTool.space + thisAddressFLD_PHONE1);
+								"," + StringTool.space + thisAddressFLD_PHONE1);
 						}
 						
 						String thisAddressFLD_PHONE2 = (String) k.get(k.FLD_PHONE2);
 						if (!StringTool.isNothing(thisAddressFLD_PHONE2)) {
 							SelectedContactInfosText.append(
-								"," + StringTool.space + StringTool.space + thisAddressFLD_PHONE2);
+								"," + StringTool.space + thisAddressFLD_PHONE2);
 						}
 						
+						//20160726070050js: For the short version of contact data copied from
+						//the list of people linked to a patient (usually, his/her physicians etc.),
+						//we want NEITHER the salutation (Herr/Frau) NOR the mobile phone number appear.
+						//So these sections are commented out here.
+						/*
+						 * 
 						String thisAddressFLD_MOBILEPHONE = (String) k.get(k.FLD_MOBILEPHONE);
 						if (!StringTool.isNothing(thisAddressFLD_MOBILEPHONE)) {
 							// With a colon after the label:
@@ -1169,6 +1167,8 @@ public class Patientenblatt2 extends Composite implements IUnlockable {
 								.append("," + StringTool.space + k.FLD_MOBILEPHONE
 									+ StringTool.space + thisAddressFLD_MOBILEPHONE);
 						}
+						 *
+						 */
 						
 						String thisAddressFLD_FAX = (String) k.get(k.FLD_FAX);
 						if (!StringTool.isNothing(thisAddressFLD_FAX)) {
@@ -1186,17 +1186,19 @@ public class Patientenblatt2 extends Composite implements IUnlockable {
 						}
 						
 						/*
-						 * //This would not work for inpZusatzAdresse //Add another
-						 * empty line (or rather: paragraph), if at least one more
-						 * address will follow. if (i<sel.length-1) {
+						 * //This would not work for inpZusatzAdresse
+						 * //Add another empty line (or rather: paragraph),
+						 * if at least one more address will follow. 
+						 * if (i<sel.length-1) {
 						 * SelectedContactInfosText.append(System.getProperty(
 						 * "line.separator")); }
 						 */
 						
-						// } // for each element in sel do //This would not work for
-						// inpZusatzAdresse
+						// } // for each element in sel do 
+						//This would not work for inpZusatzAdresse
 						
 						/*
+						 * 20120130js
 						 * I would prefer to move the following code portions down
 						 * behind the "if sel not empty" block, so that (a)
 						 * debugging output can be produced and (b) the clipboard
@@ -1215,10 +1217,42 @@ public class Patientenblatt2 extends Composite implements IUnlockable {
 						 * code back up and leave the clipboard unchanged for now,
 						 * if no Contacts had been selected to process.
 						 * 
-						 * (However, I may disable the toolbar icon / menu entry for
-						 * this action in that case later on.)
+						 * (However, I may disable the toolbar icon / menu entry
+						 * for this action in that case later on.)
 						 */
+
+						//201305260049js
+						//For Patientenblatt2.java, PatientenListeView.java, KontakteView.java
+						//This function was primarily introduced because the above algorithm
+						//returns a double space in the phone number area. Maybe that comes from
+						//a field containing a space, or is truly generated in the code above.
 						
+						//Right now I have no time, and the postprocessing has the advantage of correcting unwanted
+						//content inside the fields as well. So I only add this today.
+						
+						// TODO Please look up the reason for the extra space above - 20210325js: DONE, was produced there, REMOVED.
+						// TODO Please make sure that multibyte Unicode characters are correctly handled below.
+						// TODO Add similar postprocessing to copySelectedAdressesToClipboard of all three .java files
+						// TODO Move the processing into a separate method/function, when the copy... methods are refactored.
+							
+						//Postprocess selectedContactInfosText:
+						//Remove any leading or trailing spaces;
+						//Replace any " ," by ",";
+						//Replace any " ." by ".";
+						//Replace any multiple spaces by single spaces.
+						int n=0;
+						while (n<SelectedContactInfosText.length()) {
+							if (   SelectedContactInfosText.codePointAt(n)==StringTool.space.codePointAt(0)
+								&& ( n==SelectedContactInfosText.length()
+									|| SelectedContactInfosText.codePointAt(n+1)==(",").codePointAt(0)
+									|| SelectedContactInfosText.codePointAt(n+1)==(".").codePointAt(0)
+									|| SelectedContactInfosText.codePointAt(n+1)==StringTool.space.codePointAt(0) )
+								){ 
+								SelectedContactInfosText.deleteCharAt(n);
+								} else { 
+								n=n+1;}
+						};				
+
 						// System.out.print("jsdebug: SelectedContactInfosText:
 						// \n"+SelectedContactInfosText+"\n");
 						
@@ -1240,16 +1274,18 @@ public class Patientenblatt2 extends Composite implements IUnlockable {
 			};
 		
 		/*
+		 * 201303141833js adopted from KontakteView.java
+		 * 201201280147js:
 		 * adopted from KontakteView.java Copy selected address(es) to the
 		 * clipboard, so it/they can be easily pasted into a letter for
 		 * printing. Two actions with identical / similar code has also been
 		 * added to PatientenListeView.java
 		 */
 		copySelectedAddressesToClipboardAction =
-			new Action(Messages.KontakteView_copySelectedAddressesToClipboard) { // $NON-NLS-1$
+			new Action(Messages.Patientenblatt2_copySelectedAddressesToClipboard) { // $NON-NLS-1$
 				{
 					setImageDescriptor(Images.IMG_CLIPBOARD.getImageDescriptor());
-					setToolTipText(Messages.KontakteView_copySelectedAddressesToClipboard); // $NON-NLS-1$
+					setToolTipText(Messages.Patientenblatt2_copySelectedAddressesToClipboard); // $NON-NLS-1$
 				}
 				
 				@Override
@@ -1260,46 +1296,40 @@ public class Patientenblatt2 extends Composite implements IUnlockable {
 					
 					StringBuffer selectedAddressesText = new StringBuffer();
 					
-					// Here's a handling difference between Patientenblatt2.java and
-					// KontakteView.java:
+					// Here's a handling difference between
+					// Patientenblatt2.java and KontakteView.java:
 					// Apparently, the method getSelection() from ListDisplay.java
-					// returns only the
-					// first selected entry.
+					// returns only the first selected entry.
 					// Actually, in the List of addresses in section "Hinzu", it is
-					// only possible to
-					// select one address at a time.
+					// only possible to select one address at a time.
 					// Moreover, it doesn't return Object[], but T, which is a list
-					// to be displayed
-					// with GUI, extending composite.
-					// Object[] sel = inpZusatzAdresse.getSelection(); //This would
-					// not work for
-					// inpZusatzAdresse
-					BezugsKontakt sel = (BezugsKontakt) inpZusatzAdresse.getSelection(); // This
-					// works, but returns only one entry.
+					// to be displayed with GUI, extending composite.
+					// Object[] sel = inpZusatzAdresse.getSelection();
+					//This would not work for inpZusatzAdresse
+					BezugsKontakt sel = (BezugsKontakt) inpZusatzAdresse.getSelection();
+					// This works, but returns only one entry.
 					
 					// If you enable the following line for debug output,
 					// you should also enable the
 					// SelectedContactInfosText.setLength(0) line below,
 					// and enable output of SelectedContactInfosText even for the
-					// case of an empty
-					// selection further below.
+					// case of an empty selection further below.
 					// SelectedContactInfosText.append("jsdebug: Sorry, your
 					// selection is empty.");
 					
-					// if (sel != null && sel.length > 0) { //This would not work
-					// for
-					// inpZusatzAdresse
+					// if (sel != null && sel.length > 0) {
+					//This would not work for inpZusatzAdresse
 					if (sel != null) {
 						// SelectedContactInfosText.setLength(0);
 						// SelectedContactInfosText.append("jsdebug: Your selection
 						// includes "+sel.length+"
 						// element(s):"+System.getProperty("line.separator"));
 						
-						// for (int i = 0; i < sel.length; i++) { //This would not
-						// work for
-						// inpZusatzAdresse
-						// Kontakt k = (Kontakt) sel[i]; //This would not work for
-						// inpZusatzAdresse
+						// for (int i = 0; i < sel.length; i++) {
+						//This would not work for inpZusatzAdresse
+						
+						// Kontakt k = (Kontakt) sel[i];
+						//This would not work for inpZusatzAdresse
 						Kontakt k = sel.getBezugsKontakt();
 						
 						/*
@@ -1325,19 +1355,20 @@ public class Patientenblatt2 extends Composite implements IUnlockable {
 						// "+Integer.toString(i)+"
 						// "+k.toString()+System.getProperty("line.separator"));
 						
-						// getPostAnschriftPhoneFaxEmail() already returns a line
-						// separator after
-						// the address
-						// The first parameter controls multiline or single line
-						// output
-						// The second parameter controls whether the phone numbers
-						// shall be included
+						// getPostAnschriftPhoneFaxEmail()
+						// already returns a line separator after the address
+						// The first parameter controls
+						// multiline or single line output
+						// The second parameter controls
+						// whether the phone numbers shall be included
 						selectedAddressesText.append(k.getPostAnschriftPhoneFaxEmail(true, true));
 						
 						/*
-						 * //This would not work for inpZusatzAdresse //Add another
-						 * empty line (or rather: paragraph), if at least one more
-						 * address will follow. if (i<sel.length-1) {
+						 * //This would not work for inpZusatzAdresse
+						 * //Add another empty line (or rather: paragraph),
+						 * if at least one more address will follow.
+						 * 
+						 * if (i<sel.length-1) {
 						 * selectedAddressesText.append(System.getProperty(
 						 * "line.separator"));
 						 * 
