@@ -260,16 +260,209 @@ public class KontakteView extends ViewPart implements ControlFieldListener, ISav
 					gpl.create();
 					for (int i = 0; i < sel.length; i++) {
 						Kontakt k = (Kontakt) sel[i];
+						
+						//The following is a beautiful example of hardly self-explanatory code.
+						//I've added comments to explain.
+						
+						//20210325js: Change output format upon request by JH
+						//to include the professional title,
+						//show the first name before the family name,
+						//and add a few more details
+						//Leider kann man nicht einfach zusätzlich Kontakt.FLD_TITLE oder so laden
+						
+						//String[] f = new String[] { Kontakt.FLD_NAME1, Kontakt.FLD_NAME2, Kontakt.FLD_NAME3,
+						//		Kontakt.FLD_STREET, Kontakt.FLD_ZIP, Kontakt.FLD_PLACE, Kontakt.FLD_PHONE1 };
+
+						//Sadly, Title comes out empty with this approach:
+						//String[] f = new String[] { Kontakt.FLD_NAME1, Kontakt.FLD_NAME2, Kontakt.FLD_NAME3,
+						//		Kontakt.FLD_STREET, Kontakt.FLD_ZIP, Kontakt.FLD_PLACE, Kontakt.FLD_PHONE1, 
+						//		Kontakt.FLD_FAX, Kontakt.FLD_E_MAIL, Person.TITLE};
+						
+						//Try this - does this contain the title? Nope.
+						//Kontakt.FLD_SHORT_LABEL	= Patientennummer oder Kürzel
+						//So we cannot get the title directly out of Kontakt. Solution see below.
+						
 						String[] f = new String[] { Kontakt.FLD_NAME1, Kontakt.FLD_NAME2, Kontakt.FLD_NAME3,
-								Kontakt.FLD_STREET, Kontakt.FLD_ZIP, Kontakt.FLD_PLACE, Kontakt.FLD_PHONE1 };
+								Kontakt.FLD_STREET, Kontakt.FLD_ZIP, Kontakt.FLD_PLACE, Kontakt.FLD_PHONE1, 
+								Kontakt.FLD_FAX, Kontakt.FLD_E_MAIL};
+						
+						//To understand what's really in f[] now:
+						//System.out.println("Printing an address list with the following components: ");
+						//System.out.println(f[0]);	//Bezeichnung1
+						//System.out.println(f[1]);	//Bezeichnung2
+						//System.out.println(f[2]);	//Bezeichnung3
+						//System.out.println(f[3]);	//Strasse
+						//System.out.println(f[4]);	//PLZ
+						//System.out.println(f[5]);	//Ort
+						//System.out.println(f[6]);	//Telefon1
+						//The mod by js above above added:
+						//System.out.println(f[7]);	//Fax
+						//System.out.println(f[8]);	//E-Mail
+						
+						//f probably means "field(-name)", and v probably means "value"
+						//k is "kontakt" and p is "person", both are objects obtained from the db
+						//adrs[] probably means "address" and refers to a line in the output table
+						
 						String[] v = new String[f.length];
 						k.get(f, v);
+						
+						/*
+						 * 20210325js: Adding comments explaining this code...
+						 * Original version, producing 4 columns in a table
+						 *
+						//i is the currently processed entry from the list of selected contacts
+						//create an array of 4 strings for the currently processed entry
+						//these will be output as 4 columns in the current row of the resulting table
 						adrs[i] = new String[4];
+						//into field 0, put Bezeichnung1=Name SPACE Bezeichnung2=Vorname SPACE Bezeichnung3=Zusatz
 						adrs[i][0] = new StringBuilder(v[0]).append(StringConstants.SPACE).append(v[1])
 								.append(StringConstants.SPACE).append(v[2]).toString();
+						//into field 1, put Strasse
 						adrs[i][1] = v[3];
+						//into field 2, put PLZ SPACE Ort
 						adrs[i][2] = new StringBuilder(v[4]).append(StringConstants.SPACE).append(v[5]).toString();
+						//into field 3, put Telefon1
 						adrs[i][3] = v[6];
+						 *
+						 */
+						
+						/*
+						 * 20210325js:
+						 * jsversion, producing 7 columns in a table, names ordered the other way round
+						 * Sadly, the Title stays empty, the Fax maybe as well (never mind),
+						 * and all the fields combined are too long for a single line.
+						 * Consequentially, the names are wrapped within their little field,
+						 * and this looks even worse than the original.
+						 *
+						//i is the currently processed entry from the list of selected contacts
+						//create an array of 4 strings for the currently processed entry
+						//these will be output as 4 columns in the current row of the resulting table
+						adrs[i] = new String[8];
+						//into field 0, put Title
+						//The professional title must be obtained in a slightly complicated way.
+						if (k.istPerson()) {
+							Person p = Person.load(k.getId());
+							adrs[i][0] new StringBuilder(p.get(Person.TITLE)).toString();
+							};
+						//into field 1, put Bezeichnung1 SPACE Bezeichnung2 SPACE Bezeichnung3
+						adrs[i][1] = new StringBuilder(v[1]).append(StringConstants.SPACE).append(v[0]).toString();
+						//into field 2, put Bezeichnung3=Zusatz
+						adrs[i][2] = v[2];
+						//into field 3, put Strasse
+						adrs[i][3] = v[3];
+						//into field 4, put PLZ SPACE Ort
+						adrs[i][4] = new StringBuilder(v[4]).append(StringConstants.SPACE).append(v[5]).toString();
+						//into field 5, put Telefon1
+						adrs[i][5] = v[6];
+						//into field 6, put Fax
+						adrs[i][6] = v[7];
+						//into field 7, put E-mail
+						adrs[i][7] = v[8];
+						 *
+						 */
+						
+						/*
+						 * 20210325js: Producing 1 Column where wrapping causes no harm
+						 * (we could have made an interleaving product as well,
+						 *  where every other row contains names / specialties or other data,
+						 *  but I'm not that inclined to overzealous tabular alignment of the content)
+						 */
+						//i is the currently processed entry from the list of selected contacts
+						//create an array of 4 strings for the currently processed entry
+						//these will be output as 4 columns in the current row of the resulting table
+						adrs[i] = new String[1];						
+						
+						//into field 0, put Title SPACE 
+						//				Bezeichnung1 SPACE Bezeichnung2 SPACE Bezeichnung3
+						//				,SPACE Bezeichnung3=Zusatz
+						//				,SPACE put Strasse
+						//				,SPACE put PLZ SPACE Ort
+						//				,SPACE put Telefon1
+						//				,SPACE put Fax
+						//				,SPACE put E-mail
+						//
+						//And naturally this algorithm is not only unreadable
+						//but also rather dumb - i.e. causing repeated commas
+						//and spaces for empty fields.
+						
+						
+						/*
+						 * 20210325js: Produce one line, comma separated fields
+						 *
+						//The professional title must be obtained in a slightly complicated way.
+						StringBuffer a = new StringBuffer();
+						if (k.istPerson()) {
+							Person p = Person.load(k.getId());
+							a.append(p.get(Person.TITLE));
+							if (a.length()>0) { a.append(StringConstants.SPACE); }
+							};
+						if (v[1].length()>0); { a.append(StringConstants.SPACE).append(v[1]); }			//First name
+						if (v[0].length()>0); { a.append(StringConstants.SPACE).append(v[0]); }			//Family name
+						if (v[2].length()>0); { a.append("," + StringConstants.SPACE).append(v[2]); }	//Specialty
+						if (v[3].length()>0); { a.append("," + StringConstants.SPACE).append(v[3]); }	//Street
+						if (v[4].length()+v[5].length()>0); { a.append(","); }							//ZIP + City
+						if (v[4].length()>0); { a.append(StringConstants.SPACE).append(v[4]); }
+						if (v[5].length()>0); { a.append(StringConstants.SPACE).append(v[5]); }
+						if (v[6].length()>0); { a.append("," + StringConstants.SPACE).append(v[6]); }	//Phone
+						if (v[7].length()>0); { a.append("," + StringConstants.SPACE) 
+											           + "Fax" + StringConstants.SPACE).append(v[7]); }	//Fax
+						if (v[8].length()>0); { a.append("," + StringConstants.SPACE).append(v[8]); }	//E-Mail
+						 */
+
+						/*
+						 * 20210325js: Produce about four lines per contact -
+						 * Title FirstName FamilyName
+						 * Specialty
+						 * Street No., ZIP City
+						 * Phone, Fax, E-Mail
+						 * New lines and Commas/Spaces are only synthesized when needed.
+						 * The decisions are made in a fairly robust, but not yet perfect way.
+						 * 
+						 * TODO: This is not as well made as the routine for ...copySel... below,
+						 * e.g. there is not cleaning of the title yet etc., but it already is
+						 * rather robust against empty fields, and it returns a more beautiful
+						 * output than the One-line/Four-fields-in-a-row/MuchInfoMissing-Format
+						 * originally offered here by Elexis. 
+						 * 
+						 * And still, it's rather unreadable code - 
+						 * please compare this with the longer but much more readily understandable
+						 * code below and ask where you would rather be able to make a change
+						 * and also be sure tha you can predict the result :-)
+						 * 
+						 * And this even though I've already added an info to the right of
+						 * several lines showing which content is added where - if this weren't
+						 * here, you'd rather not have a clue what v[4] might possibly mean etc.,
+						 * or would you? - So please let these comments stay where they are,
+						 * and don't even ruin their usability by applying short line breaks
+						 * or putting them up or down to another line etc.
+						 */
+						//The professional title must be obtained in a slightly complicated way.
+						StringBuffer a = new StringBuffer();
+						if (k.istPerson()) {
+							Person p = Person.load(k.getId());
+							a.append(p.get(Person.TITLE));		//Don't automatically add a space here
+							};
+						if ( (    a.length()>0 ) && ( v[1].length() + v[0].length() )>0 ) { a.append(StringConstants.SPACE); }
+						if (   v[1].length()>0 ) { a.append(v[1]); }											//First name
+						if ( ( v[1].length()>0 ) && ( v[1].length()>0 ) ) { a.append(StringConstants.SPACE); }
+						if (   v[0].length()>0 ) { a.append(v[0]); }											//Family name
+						if (   v[2].length()>0 ) { a.append("\n").append(v[2]); }								//Specialty
+						if ( ( v[3].length() + v[4].length() + v[5].length() ) >0 ) { a.append("\n"); }
+						if (   v[3].length()>0 ) { a.append(v[3]); }											//Street
+						if ( ( v[3].length()>0 ) && ( v[4].length()+v[5].length()>0 ) ) { a.append(","); }		//ZIP + City
+						if (   v[4].length()>0 ) { a.append(StringConstants.SPACE).append(v[4]); }
+						if (   v[5].length()>0 ) { a.append(StringConstants.SPACE).append(v[5]); }
+						if ( ( v[6].length() + v[7].length() + v[8].length() ) >0 ) { a.append("\n"); }
+						if (   v[6].length()>0 ) { a.append(v[6]); }											//Phone
+						if ( ( v[6].length()>0 ) && (v[7].length()>0 ) ) { a.append("," + StringConstants.SPACE); }
+						if (   v[7].length()>0 ) { a.append("Fax" + StringConstants.SPACE).append(v[7]); }		//Fax
+						if ( ( ( v[6].length() + v[7].length() ) >0 ) && ( v[8].length()>0 ) ) { a.append("," + StringConstants.SPACE); }
+						if (   v[8].length()>0 ) { a.append(v[8]); }											//E-Mail
+						//If another address follows, add an emtpy line before that - 
+						//otherwise the output of this would not be easily legible.
+						if ( (    a.length()>0 ) && ( i < sel.length ) ) { a.append("\n"); }  
+							
+						adrs[i][0] = new StringBuilder(a).toString();
 					}
 					gpl.insertTable("[Liste]", adrs, null);
 					gpl.open();
