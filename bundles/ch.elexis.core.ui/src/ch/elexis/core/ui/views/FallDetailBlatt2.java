@@ -78,10 +78,14 @@ import ch.elexis.data.dto.FallDTO;
 import ch.rgw.tools.StringTool;
 import ch.rgw.tools.TimeTool;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Display detail data of a Fall
  */
 public class FallDetailBlatt2 extends Composite implements IUnlockable {
+	static Logger log = LoggerFactory.getLogger(FallDetailBlatt2.class);
 	private static final String SELECT_CONTACT_BODY =
 		Messages.FallDetailBlatt2_PleaseSelectContactFor; //$NON-NLS-1$
 	private static final String SELECT_CONTACT_CAPTION =
@@ -271,7 +275,12 @@ public class FallDetailBlatt2 extends Composite implements IUnlockable {
 				if ("UVG".equals(abrechungsMethodeStr)) {
 					int idx = ArrayUtils.indexOf(Reasons, FallConstants.TYPE_ACCIDENT);
 					if (idx > -1) {
-						fall.setGrund(Reasons[idx]);
+						
+						if (fall != null) {
+							fall.setGrund(Reasons[idx]);
+						} else {
+							log.error("ERROR: FallDetailBlatt2: fall is null, but I want to: fall.setGrund(Reasond[idx]) --- Please review the code.");
+						}
 						
 						int ix = cReason.indexOf(Reasons[idx]);
 						if (ix == -1) {
