@@ -105,12 +105,57 @@ public class TextView extends ViewPart implements IActivationListener {
 	
 	@Override
 	public void dispose(){
+		log.debug("TextView.java dispose(): begin");		
+		
 		if (actBrief != null) {
 			CoreHub.getLocalLockService().releaseLock(actBrief);
 		}
+		
+		//20130425js added this - otherwise, neither would the doc have reliably been saved upon closing its frame
+		//(but possibly when that lost focus?), NOR would the frame have been take from the noas list of NOAText instances,
+		//and remained on that forever, so the OpenOffice/LibreOffice server use would never have been deactivated. 
+		
+		//TODO: 20210329js: The following comments are rather old, this should probably work now,
+		//I just restored them to make sure that nor work which went into Elexis 2.1.7js / noatext_jsl / noatext_js is lost. 
+		//log.debug("TextView.java dispose(): TODO REVIEW TODO REVIEW TODO REVIEW TODO REVIEW TODO REVIEW TODO REVIEW TODO");
+		//log.debug("TextView.java dispose(): When you close a document frame, NOAText or msword_js closeListener() should probably run. DO YOU OBSERVE THIS?");
+		//log.debug("TextView.java dispose(): And closeListener should call removeMe(), thereby saving the last instance of the document,");
+		//log.debug("TextView.java dispose(): and housekeeping like noas.remove() and deactivateOfficeIfNoasIsEmpty()...");
+		//log.debug("TextView.java dispose(): TODO REVIEW TODO REVIEW TODO REVIEW TODO REVIEW TODO REVIEW TODO REVIEW TODO");			
+		
+		//20130425js: Nach Einfügen der folgenden Zeile wird er NOText closeListener mit queryClosing() und notifyClosing() tatsächlich aufgerufen,
+		//in der Folge wird dann auch OO beendet, wenn das Letzte NOAText Fenster geschlossen wurde.
+		//UND ich kann danach sogar Elexis beenden, ohne dass es hängenbleibt, weil es selbst erst noch OO beenden wollte...
+		//Jippieh - zumindest folgendes funktioniert jetzt (as of 201304250337js):
+		//
+		//Ausgangsbasis jeweils: soffice.bin und soffice.exe sind NICHT im Speicher.
+		//
+		//Elexis starten - muster max - brief doppelklicken (implizit wird AOO geladen) - BriefInhalt erscheint im Briefe Fenster -
+		//	Dieses Fenster schliessen - soffice.bin und soffice.exe werden entladen - Elexis beenden - problemlos.  
+		//
+		//Elexis starten - muster max - brief doppelklicken (implizit wird AOO geladen) - BriefInhalt erscheint im Briefe Fenster -
+		//Elexis direkt schliessen - soffice.bin und soffice.exe werden entladen - Elexis beendet sich problemlos.
+		//
+		//20210329js: The following line is absolutely essential.
+		//It ensures that when you close Elexis,
+		//all open Documents (which are in separate independent Windows in the case of the msword_js plugin) are closed
+		//before the Elexis main Window is closed.
+		//And this in turn ensures, that the user does NOT get confused
+		//by any left-over Document windows which would still remain still open, but have lost their parent.
+		//Otherwise, the user might perform further edits in these orphan documents,
+		//but these edits would NEVER find the way to the Elexis database,
+		//even if he should open another Elexis later on.
+		//For noatext_js or other text systems, in a similar way, this would contribute to the interfaces
+		//knowledge of remaining documents that require that the OpenOffice server be still kept in memory. 
+		txt.getPlugin().dispose();
+
+		log.debug("TextView.java dispose(): about to GlobalEventDispatcher.removeActivationListener()...");
 		GlobalEventDispatcher.removeActivationListener(this, this);
+		log.debug("TextView.java dispose(): about to actBrief = null; super.dispose()...");
+		
 		actBrief = null;
 		super.dispose();
+		log.debug("TextView.java dispose(): end\n");
 	}
 	
 	public boolean openDocument(Brief doc){
