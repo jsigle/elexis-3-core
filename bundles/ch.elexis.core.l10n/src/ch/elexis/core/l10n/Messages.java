@@ -957,6 +957,7 @@ public class Messages extends NLS {
 	public static String BriefAuswahlOpenLetterForEdit;
 	public static String BriefAuswahlRenameButtonText;
 	public static String BriefAuswahlRenameDocument;
+	public static String BriefAuswahlStresstestAskForConfirmationBeforeRunning;
 	public static String BriefAuswahlStressTestButtonText1;
 	public static String BriefAuswahlStressTestButtonText2;
 	public static String BriefAuswahlColumnDate;

@@ -134,6 +134,7 @@ public class Messages {
 	public static String BriefAuswahlOpenLetterForEdit = ch.elexis.core.l10n.Messages.BriefAuswahlOpenLetterForEdit;
 	public static String BriefAuswahlRenameButtonText = ch.elexis.core.l10n.Messages.BriefAuswahlRenameButtonText;
 	public static String BriefAuswahlRenameDocument = ch.elexis.core.l10n.Messages.BriefAuswahlRenameDocument;
+	public static String BriefAuswahlStresstestAskForConfirmationBeforeRunning = ch.elexis.core.l10n.Messages.BriefAuswahlStresstestAskForConfirmationBeforeRunning;
 	public static String BriefAuswahlStressTestButtonText1 = ch.elexis.core.l10n.Messages.BriefAuswahlStressTestButtonText1;
 	public static String BriefAuswahlStressTestButtonText2 = ch.elexis.core.l10n.Messages.BriefAuswahlStressTestButtonText2;
 	public static String BriefAuswahlColumnDate = ch.elexis.core.l10n.Messages.BriefAuswahlColumnDate;
