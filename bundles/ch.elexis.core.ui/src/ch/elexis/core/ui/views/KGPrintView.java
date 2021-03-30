@@ -76,6 +76,13 @@ public class KGPrintView extends ViewPart {
 	@Override
 	public void dispose(){
 		clearItems();
+		
+		//TODO: 20210329js: Muss hier VOR oder HINTER clearItems noch das hinein?
+		//20210329js: Ensure that an external window containing an open document
+		//is closed before Elexis closes, so that no orphan documents remain
+		//which could trick the user into editing something about to be lost.
+		//text.getPlugin().dispose();
+
 		super.dispose();
 	}
 	

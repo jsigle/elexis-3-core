@@ -105,6 +105,13 @@ public class KonsListe extends ViewPart implements IRefreshable, ISaveablePart2 
 		getSite().getPage().removePartListener(udpateOnVisible);
 		ElexisEventDispatcher.getInstance().removeListeners(eeli_fall, eeli_kons, eeli_pat);
 		liste.stop();
+		
+		//20210329js: Ensure that an external window containing an open document
+		//is closed before Elexis closes, so that no orphan documents remain
+		//which could trick the user into editing something about to be lost.
+		//txt.getPlugin().dispose();
+
+
 		super.dispose();
 	}
 	

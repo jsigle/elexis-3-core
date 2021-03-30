@@ -55,6 +55,12 @@ public class RezeptBlatt extends ViewPart implements ICallback, IActivationListe
 		if (actBrief != null) {
 			CoreHub.getLocalLockService().releaseLock(actBrief);
 		}
+
+		//20210329js: Ensure that an external window containing an open document
+		//is closed before Elexis closes, so that no orphan documents remain
+		//which could trick the user into editing something about to be lost.
+		text.getPlugin().dispose();
+
 		GlobalEventDispatcher.removeActivationListener(this, this);
 		super.dispose();
 	}
