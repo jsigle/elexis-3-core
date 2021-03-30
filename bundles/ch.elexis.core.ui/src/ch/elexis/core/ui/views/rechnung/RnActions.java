@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2007-2010, G. Weirich and Elexis
+ * Portions (c) 2013-2021 Joerg M. Sigle
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,6 +8,10 @@
  *
  * Contributors:
  *    G. Weirich - initial implementation
+ *    J. Sigle   - Multiple improvements in 2013
+ *    			 - 201510, 201512: added Liste exportieren, um eine Rechnungsliste zu exportieren
+ *    			 - 201512: Rechnungen nicht mehrfach im Verarbeitungsergebnis aufführen, wenn zuvor aufgeklappt wurde,
+ *    			   und eine Rechnung auf Ebene von Patient/Fall/Rechnung effektiv bis zu 3 x markiert ist. 
  * 
  *******************************************************************************/
 
