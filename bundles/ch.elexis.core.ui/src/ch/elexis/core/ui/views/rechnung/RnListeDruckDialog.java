@@ -1,3 +1,17 @@
+/*******************************************************************************
+ * Copyright (c) 2007-2010, G. Weirich and Elexis
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    G. Weirich - initial implementation
+ *    J. Sigle   - 201512: Rechnungen nicht mehrfach im Verarbeitungsergebnis auff�hren, wenn zuvor aufgeklappt wurde,
+ *    			   und eine Rechnung auf Ebene von Patient/Fall/Rechnung effektiv bis zu 3 x markiert ist. 
+ * 
+ *******************************************************************************/
+
 package ch.elexis.core.ui.views.rechnung;
 
 import static ch.elexis.core.ui.text.TextTemplateRequirement.TT_LIST;
@@ -25,6 +39,7 @@ import ch.rgw.tools.Money;
 import ch.rgw.tools.TimeTool;
 import ch.rgw.tools.Tree;
 
+//201512211341js: Info: This dialog starts the generation of printed output immediately after its creation. 
 public class RnListeDruckDialog extends TitleAreaDialog implements ICallback {
 	ArrayList<Rechnung> rnn = new ArrayList<Rechnung>();
 	private TextContainer text;
@@ -46,7 +61,7 @@ public class RnListeDruckDialog extends TitleAreaDialog implements ICallback {
 						for (Tree tRn : (Tree[]) tFall.getChildren().toArray(new Tree[0])) {
 							Rechnung rn = (Rechnung) tRn.contents;
 							rnn.add(rn);
-							// Rechnungen sollten nicht doppelt im Verarbeitungsergebnis auftreten,
+							// 201512211302js: Rechnungen sollten nicht doppelt im Verarbeitungsergebnis auftreten,
 							// nur weil aufgeklappt und dann bis zu 3x etwas vom gleichen Patienten/Fall/Rechnung markiert war.
 							// deshalb prüfen, ob die rechnung schon drin ist, bevor sie hinzugefügt wird.
 							if (!rnn.contains(rn)) {
