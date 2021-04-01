@@ -94,7 +94,7 @@ public class ReminderListsView extends ViewPart implements HeartListener, ISelec
 	private boolean autoSelectPatient = CoreHub.userCfg.get(Preferences.USR_REMINDER_AUTO_SELECT_PATIENT, false);
 	private boolean showOnlyDueReminders = CoreHub.userCfg.get(Preferences.USR_REMINDERSOPEN, false);
 	private boolean showAllReminders = (CoreHub.userCfg.get(Preferences.USR_REMINDEROTHERS, false)
-			&& CoreHub.acl.request(AccessControlDefaults.ADMIN_VIEW_ALL_REMINDERS));
+			&& CoreHub.acl.request(AccessControlDefaults.ADMIN_VIEW_OTHERS_REMINDERS));
 	private boolean showSelfCreatedReminders = CoreHub.userCfg.get(Preferences.USR_REMINDEROWN, false);
 
 	private Composite viewParent;
@@ -202,7 +202,7 @@ public class ReminderListsView extends ViewPart implements HeartListener, ISelec
 		}
 	};
 
-	private Action showOthersRemindersAction = new RestrictedAction(AccessControlDefaults.ADMIN_VIEW_ALL_REMINDERS,
+	private Action showOthersRemindersAction = new RestrictedAction(AccessControlDefaults.ADMIN_VIEW_OTHERS_REMINDERS,
 			Messages.ReminderView_foreignAction, Action.AS_CHECK_BOX) {
 		{
 			setToolTipText(Messages.ReminderView_foreignTooltip);
@@ -570,7 +570,7 @@ public class ReminderListsView extends ViewPart implements HeartListener, ISelec
 					new String[] { Reminder.FLD_DUE,
 					Reminder.FLD_PRIORITY, Reminder.FLD_ACTION_TYPE, Reminder.FLD_CREATOR, Reminder.FLD_KONTAKT_ID });
 			List<Reminder> reminders = Collections.emptyList();
-			if (showAllReminders && CoreHub.acl.request(AccessControlDefaults.ADMIN_VIEW_ALL_REMINDERS)) {
+			if (showAllReminders && CoreHub.acl.request(AccessControlDefaults.ADMIN_VIEW_OTHERS_REMINDERS)) {
 				query.add(Reminder.FLD_KONTAKT_ID, Query.EQUALS, actPatient.getId());
 				if (filterDueDateDays != -1) {
 					applyDueDateFilter(query);

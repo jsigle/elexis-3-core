@@ -123,7 +123,7 @@ public class ReminderView extends ViewPart implements IActivationListener, Heart
 	private boolean showOnlyDueReminders =
 		CoreHub.userCfg.get(Preferences.USR_REMINDERSOPEN, false);
 	private boolean showOthersReminders = (CoreHub.userCfg.get(Preferences.USR_REMINDEROTHERS, false)
-		&& CoreHub.acl.request(AccessControlDefaults.ADMIN_VIEW_ALL_REMINDERS));
+		&& CoreHub.acl.request(AccessControlDefaults.ADMIN_VIEW_OTHERS_REMINDERS));
 	private boolean showSelfCreatedReminders =
 		CoreHub.userCfg.get(Preferences.USR_REMINDEROWN, false);
 	
@@ -249,7 +249,7 @@ public class ReminderView extends ViewPart implements IActivationListener, Heart
 		menu.createToolbar(reloadAction, newReminderAction, toggleAutoSelectPatientAction);
 		menu.createMenu(createActionList());
 		
-		if (CoreHub.acl.request(AccessControlDefaults.ADMIN_VIEW_ALL_REMINDERS)) {
+		if (CoreHub.acl.request(AccessControlDefaults.ADMIN_VIEW_OTHERS_REMINDERS)) {
 			showOthersRemindersAction.setEnabled(true);
 			showOthersRemindersAction
 				.setChecked(CoreHub.userCfg.get(Preferences.USR_REMINDEROTHERS, false));
@@ -539,7 +539,7 @@ public class ReminderView extends ViewPart implements IActivationListener, Heart
 				}
 			};
 		showOthersRemindersAction =
-			new RestrictedAction(AccessControlDefaults.ADMIN_VIEW_ALL_REMINDERS,
+			new RestrictedAction(AccessControlDefaults.ADMIN_VIEW_OTHERS_REMINDERS,
 				Messages.ReminderView_foreignAction, Action.AS_CHECK_BOX) {
 				{
 					setToolTipText(Messages.ReminderView_foreignTooltip);
@@ -949,7 +949,7 @@ public class ReminderView extends ViewPart implements IActivationListener, Heart
 			SortedSet<Reminder> reminders = new TreeSet<Reminder>();
 			
 			if (showOthersReminders
-				&& CoreHub.acl.request(AccessControlDefaults.ADMIN_VIEW_ALL_REMINDERS)) {
+				&& CoreHub.acl.request(AccessControlDefaults.ADMIN_VIEW_OTHERS_REMINDERS)) {
 				qbe.clear();
 				if(filterDueDateDays != -1) {
 					applyDueDateFilter(qbe);
