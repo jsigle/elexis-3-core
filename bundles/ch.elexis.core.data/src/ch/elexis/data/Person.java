@@ -234,7 +234,7 @@ public class Person extends Kontakt {
 	//Finally, return the result.
 	//
 	
-	int personaliaDefaultTemplate = 0;
+	int personaliaDefaultTemplate = 5;
 	public boolean personaliaDefaultWithAge = false;
 	public boolean personaliaDefaultWithKuerzel = false;
 	
@@ -386,9 +386,7 @@ public class Person extends Kontakt {
 		
 		//Replace remaining | characters by nothing;
 		//these are left over from sections whose content identifier was replaced in pass 1.
-		System.out.println("Before: "+ret);
 		ret = ret.replaceAll(Pattern.quote("|"),"");
-		System.out.println("After:  "+ret);
 		return ret;
 	}
 	
