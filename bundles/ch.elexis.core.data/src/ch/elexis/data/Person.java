@@ -14,6 +14,8 @@ package ch.elexis.data;
 
 
 
+import java.util.regex.Pattern;
+
 import ch.elexis.core.constants.StringConstants;
 import ch.elexis.core.model.ICodeElement;
 import ch.elexis.core.types.Gender;
@@ -190,33 +192,204 @@ public class Person extends Kontakt {
 	
 	/*
 	 * Einen String mit den Personalien holen.
+	 *
+	 * Stock Elexis Version:
+	 * Max Mustermann (m), 01.02.1934, Dipl. biol.
 	 * 
 	 * Ein allfälliger Titel wie Dr. med. kommt nach Name und Vorname, damit die Suche bei der
 	 * Patientsicht nach Namen und Person funktioniert
 	 */
-	public String getPersonalia(){
-		StringBuffer ret = new StringBuffer(200);
+	
+	//20210401js: added support for different formats to getPersonalia()
+	//while maintaining compatibility with the original version
+	//and leaving it's format as default
+
+	//Regarding the format string:
+	//
+	//A section begins with the beginning of the format string or with |
+	//To keep it simple, a section ends just before the next section or at the end of the format string,
+	//i.e. there no characters can reside between sections.
+	//
+	//Possible replaceable content identifiers within a section are:
+	//[NAME] or [FIRSTNAME] or [SEX] or [BIRTHDATE] or [AGE] or [KUERZEL]
+	//To keep it simple, we only support one occurence of each replaceable content identifier.
+	//
+	//The algorithm works as follows:
+	//
+	//First pass:
+	//For each of the possible replaceable content identifiers
+	//(controlled by passed flags withAge and withKuerzel for these two)  
+	//	check whether it is contained in the format string,
+	//		if yes
+	//			then if suitable content is available for the current patient,
+	//				then this replaceable content identifier is replaced by the data from the patient.
+	//
+	//Second pass:
+	//For each of the possible replaceable content identifiers,
+	//	check whether it is STILL contained in the format string,
+	//		if yes,
+	//			then identify the first and last character of the respective section,
+	//				 and delete this section from the string
+	//
+	//Finally, return the result.
+	//
+	
+	int personaliaDefaultTemplate = 0;
+	public boolean personaliaDefaultWithAge = false;
+	public boolean personaliaDefaultWithKuerzel = false;
+	
+	public String[] personaliaTemplates = {
+	//Stock Elexis 3.x format:
+	//Mustermann Max (m), 01.02.1934, Dipl. biol.
+	//Mustermann Max (m), 01.02.1934 (88), Dipl. biol.
+	//Mustermann Max (m), 01.02.1934 Dipl. biol. - [496]
+	//Mustermann Max (m), 01.02.1934 (88), Dipl. biol. - [496]
+	"[NAME]| [FIRSTNAME]| ([SEX])|, [BIRTHDATE]|, ([AGE])|, [TITLE] - [[KUERZEL]]",
+
+	//Mustermann Max  (m)  01.02.1934  Dipl. biol.
+	//Mustermann Max  (m)  01.02.1934  (88)  Dipl. biol.
+	//Mustermann Max  (m)  01.02.1934  Dipl. biol.  [496]
+	//Mustermann Max  (m)  01.02.1934  (88)  Dipl. biol.  [496]
+	"[NAME]| [FIRSTNAME]|  ([SEX])|  [BIRTHDATE]| ([AGE])|  [TITLE]|  [[KUERZEL]]", 
+
+	//Mustermann Max  m  01.02.1934  Dipl. biol.
+	//Mustermann Max  m  01.02.1934  (88)  Dipl. biol.
+	//Mustermann Max  m  01.02.1934  Dipl. biol.  [496]
+	//Mustermann Max  m  01.02.1934  (88)  Dipl. biol.  [496]
+	"[NAME]| [FIRSTNAME]|  [SEX]|  [BIRTHDATE]|  ([AGE])|  [TITLE]|  [[KUERZEL]]", 
+
+	//Mustermann Max  m  01.02.1934  Dipl. biol.
+	//Mustermann Max  m  01.02.1934  88  Dipl. biol.
+	//Mustermann Max  m  01.02.1934  Dipl. biol.  [496]
+	//Mustermann Max  m  01.02.1934  88  Dipl. biol.  [496]
+	"[NAME]| [FIRSTNAME]|  [SEX]|  [BIRTHDATE]|  [AGE]|  [TITLE]|  [[KUERZEL]]", 
+
+	//Mustermann Max  (88)  01.02.1934  m  Dipl. biol.
+	//Mustermann Max  (88)  01.02.1934  m  Dipl. biol.
+	//Mustermann Max  01.02.1934  m  Dipl. biol.  [496]
+	//Mustermann Max  (88)  01.02.1934  m  Dipl. biol.  [496]
+	"[NAME]| [FIRSTNAME]|  ([AGE])|  [BIRTHDATE]|  [SEX]|  [TITLE]|  [[KUERZEL]]", 
+
+	//Mustermann Max  88  01.02.1934  m  Dipl. biol.
+	//Mustermann Max  88  01.02.1934  m  Dipl. biol.
+	//Mustermann Max  01.02.1934  m  Dipl. biol.  [496]
+	//Mustermann Max  88  01.02.1934  m  Dipl. biol.  [496]
+	"[NAME]| [FIRSTNAME]|  [AGE]|  [BIRTHDATE]|  [SEX]|  [TITLE]|  [[KUERZEL]]"
+	};
+
+		String personaliaRemoveUnreplacedSections(String a, String sectionIdentifier) {
+		if ( StringTool.isNothing(a) || StringTool.isNothing(sectionIdentifier) ) return a; 
+		int posFound = a.indexOf(sectionIdentifier);
+		if ( posFound < 0 ) return a; 
+		
+		int posBefore = posFound-1;
+		while ( (posBefore >= 0) && (a.charAt(posBefore) != '|') ) posBefore--; 
+		int posAfter = posFound + sectionIdentifier.length();
+		while ( (posAfter < a.length() ) && (a.charAt(posAfter) != '|') ) posAfter++;
+		
+		String b = new String();
+		
+		if (posBefore > -1) b = a.substring(0,posBefore);
+		if (posAfter < a.length() ) b = b+a.substring(posAfter);
+		return b;
+	}
+	
+	public String getPersonalia() {
+		return getPersonalia(personaliaTemplates[personaliaDefaultTemplate],
+				personaliaDefaultWithAge, personaliaDefaultWithKuerzel);
+	}
+	
+	public String getPersonalia(String personaliaTemplate, boolean withAge, boolean withKuerzel) {
+		//start with a copy of the supplied format string
+		String ret = new String(personaliaTemplate);
+		
+		//obtain personalia data	
 		String[] fields = new String[] {
-			NAME, FIRSTNAME, BIRTHDATE, SEX, TITLE
+			NAME, FIRSTNAME, BIRTHDATE, SEX, TITLE,
 		};
 		String[] vals = new String[fields.length];
-		get(fields, vals);
-		ret.append(vals[0]);
-		if (!StringTool.isNothing(vals[1])) {
-			ret.append(StringTool.space).append(vals[1]);
+		get(fields, vals);													
+
+		//Trim these fields. Otherwise, I've seen at least Title to return " ",
+		//i.e. a space - that would actually end up in the personalia String,
+		//together with its preceeding separation characters :-(
+		for (int i = 0; i<vals.length; i++) {
+			vals[i] = vals[i].trim();
 		}
-		if (StringTool.isNothing(vals[3])) {
-			ret.append(StringTool.space);
-		} else {
-			ret.append(StringTool.space + "(").append(vals[3]).append(")," + StringTool.space);
-		}
-		if (!StringTool.isNothing(vals[2])) {
-			ret.append(new TimeTool(vals[2]).toString(TimeTool.DATE_GER));
-		}
-		if (!StringTool.isNothing(vals[4])) {
-			ret.append("," + StringTool.space).append(vals[4]);
-		}
-		return ret.toString();
+		
+		//First Pass:
+		//fill in available data into format string, subject to availability and control flags
+		//Please note:
+		//YES, I certainly CAN, but NO, I don't WANT to put this into a for loop based upon the fields array.
+		//I prefer to see and understand with a single glance what's happening.
+		//Thank you.
+		ret = ret.replaceAll(Pattern.quote("[NAME]"),vals[0]);
+		ret = ret.replaceAll(Pattern.quote("[FIRSTNAME]"),vals[1]);
+		ret = ret.replaceAll(Pattern.quote("[BIRTHDATE]"),vals[2]);
+		ret = ret.replaceAll(Pattern.quote("[SEX]"),vals[3]);
+		ret = ret.replaceAll(Pattern.quote("[TITLE]"),vals[4]);
+		if (withAge) ret = ret.replaceAll(Pattern.quote("[AGE]"),"123");
+		if (withKuerzel) ret = ret.replaceAll(Pattern.quote("[KUERZEL]"),"AB");
+
+		/*
+		//Second Pass:
+		//Scan for sections with identifiers that have NOT been replaced yet.
+		//If found, delete them.
+		//I'm implementing this by non-greedy pattern matching,
+		//but to keep the search string requirements simple for users,
+		//this needs a few preparations.
+		//Duplicate all | strings:
+		System.out.println("Before: "+ret);
+		ret = ret.replaceAll(Pattern.quote("|"), "||");
+		System.out.println("After:  "+ret);
+		//Add extra | at the start and at the end:
+		ret = "|"+ret+"|";
+		//Do non greedy search for remaining fields, and replace them by nothing:
+		System.out.println("Before: "+ret);
+		//In java regex logic (like in many others), square brackets designate character classes,
+		//and therefore must come in pairs.
+		//BUT to escape square brackets, funnily enough however, they must be preceeded by TWO \\ and not ONE \
+		//BUT even more funnily, only the FIRST = opening square bracket must (and may) be escaped -
+		//after that, the other one is NOT inside a regex class, so it's interpreted as normal square bracket anyway,
+		//and trying to escape it would only destroy the match.
+		//WELL. It's not a bug. It's not a feature of MS-DOS or MS Windows either - but far beyond: it's Java. 
+		//And ONCE AGAIN, hours lost to use a Java built in solution, instead of programming a simple one myself.
+		//ret = ret.replaceAll("|.*?[.*?].*?|","");		//Does not work...
+		//ret = ret.replaceAll("|.*?\[.*?\].*?|","");	//Is not even accepted by Eclipse...	
+		//ret = ret.replaceAll("|.*?\[.*?].*?|","");	//Is not even accepted by Eclipse...	
+		//ret = ret.replaceAll("|.*?\\[.*?\\].*?|","");	//Does not work either...
+		//ret = ret.replaceAll("|.*?\\[.*?].*?|","");	//Should be correct, STILL does not work... (works in regex simulator, though...)
+		//Well, we've got to escape the | as well, or it means "or", so...
+		//ret = ret.replaceAll("\|.*?\\[.*?].*?\|","");		//Not accepted by Eclipse...	
+		//ret = ret.replaceAll("\\|.*?\\[.*?].*?\\|","");	//Doesn't work as expected (replaces almost all = non-greedy ? ignored :-(
+		ret = ret.replaceAll("\\|.*?\\[.+?].*?\\|","");	//Doesn't work as expected (replaces almost all = non-greedy ? ignored :-(
+		System.out.println("After:  "+ret);
+		
+		//Well. - Several hours later, I give up on this new attemt of
+		//"quickly using Java regex replacements, even though I know in advance
+		//that it will be be extra difficult to read, and most probably never work as expected anyway."
+		//Which, by the way, are some of the core differences between Java and Perl... or Pascal... or Assembler... (sic!) :-)
+		 */
+		
+		//Now: Do it myself instead. *That* will be:
+		//Simple, comprehensible, doing what it's meant to,
+		//and all of that much faster than anyone can merely read the documentation of Java regexes,
+		//let alone a couple of forum contributions by fellow users still suffering...      
+		ret = personaliaRemoveUnreplacedSections(ret,"[NAME]");
+		ret = personaliaRemoveUnreplacedSections(ret,"[FIRSTNAME]");
+		ret = personaliaRemoveUnreplacedSections(ret,"[BIRTHDATE]");
+		ret = personaliaRemoveUnreplacedSections(ret,"[SEX]");
+		ret = personaliaRemoveUnreplacedSections(ret,"[TITLE]");
+		ret = personaliaRemoveUnreplacedSections(ret,"[AGE]");
+		ret = personaliaRemoveUnreplacedSections(ret,"[KUERZEL]");
+		//So funny. After a few minutes, the self made version works like a charm. :-)
+		
+		//Replace remaining | characters by nothing;
+		//these are left over from sections whose content identifier was replaced in pass 1.
+		System.out.println("Before: "+ret);
+		ret = ret.replaceAll(Pattern.quote("|"),"");
+		System.out.println("After:  "+ret);
+		return ret;
 	}
 	
 	@Override
