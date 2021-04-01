@@ -450,6 +450,8 @@ public class Messages {
 	public static String Patientenblatt2_selectLegalGuardianMessage = ch.elexis.core.l10n.Messages.Patientenblatt2_selectLegalGuardianMessage;
 	public static String ReminderView_activatePatientAction = ch.elexis.core.l10n.Messages.ReminderView_activatePatientAction;
 	public static String ReminderView_activatePatientTooltip = ch.elexis.core.l10n.Messages.ReminderView_activatePatientTooltip;
+	public static String ReminderView_assignTo = ch.elexis.core.l10n.Messages.ReminderView_assignTo;
+	public static String ReminderView_assignToUnfiltered = ch.elexis.core.l10n.Messages.ReminderView_assignToUnfiltered;
 	public static String ReminderView_toggleSelectPatientActionTooltip = ch.elexis.core.l10n.Messages.ReminderView_toggleSelectPatientActionTooltip;
 	public static String ReminderView_defaultPatientRelatedTooltip = ch.elexis.core.l10n.Messages.ReminderView_defaultPatientRelatedTooltip;
 	public static String ReminderView_deleteAction = ch.elexis.core.l10n.Messages.ReminderView_deleteAction;
@@ -466,6 +468,10 @@ public class Messages {
 	public static String ReminderView_onlyDueToolTip = ch.elexis.core.l10n.Messages.ReminderView_onlyDueToolTip;
 	public static String ReminderView_onePatOnly = ch.elexis.core.l10n.Messages.ReminderView_onePatOnly;
 	public static String ReminderView_onlyOnePatientForActivation = ch.elexis.core.l10n.Messages.ReminderView_onlyOnePatientForActivation;
+	public static String ReminderView_overrideShowFromAnyPatientReminderAction = ch.elexis.core.l10n.Messages.ReminderView_overrideShowFromAnyPatientReminderAction; 
+	public static String ReminderView_overrideShowOnlyFromCurrentPatientReminderAction = ch.elexis.core.l10n.Messages.ReminderView_overrideShowOnlyFromCurrentPatientReminderAction;
+	public static String ReminderView_overrideShowFromAnyPatientReminderToolTip = ch.elexis.core.l10n.Messages.ReminderView_overrideShowFromAnyPatientReminderToolTip; 
+	public static String ReminderView_overrideShowOnlyFromCurrentPatientReminderTooltip = ch.elexis.core.l10n.Messages.ReminderView_overrideShowOnlyFromCurrentPatientReminderTooltip;
 	public static String ReminderView_sortByDueDate = ch.elexis.core.l10n.Messages.ReminderView_sortByDueDate;
 	public static String ReminderView_sortByDueDateAscending = ch.elexis.core.l10n.Messages.ReminderView_sortByDueDateAscending;
 	public static String ReminderView_sortByDueDateDescending = ch.elexis.core.l10n.Messages.ReminderView_sortByDueDateDescending;

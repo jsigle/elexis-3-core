@@ -1267,6 +1267,10 @@ public class Messages extends NLS {
 	public static String ReminderView_foreignAction;
 	public static String ReminderView_foreignTooltip;
 	public static String ReminderView_importantRemindersCaption;
+	public static String ReminderView_overrideShowFromAnyPatientReminderAction;
+	public static String ReminderView_overrideShowOnlyFromCurrentPatientReminderAction;
+	public static String ReminderView_overrideShowFromAnyPatientReminderToolTip;
+	public static String ReminderView_overrideShowOnlyFromCurrentPatientReminderTooltip;
 	public static String ReminderView_sortByDueDate;
 	public static String ReminderView_sortByDueDateAscending;
 	public static String ReminderView_sortByDueDateDescending;	
@@ -1384,6 +1388,8 @@ public class Messages extends NLS {
 	public static String TextContainer_TemplateTitleEmptyBody;
 	public static String TextContainer_TemplateTitleEmptyCaption;
 	public static String TextContainer_UnrecognizedFieldType;
+	public static String ReminderView_assignTo;
+	public static String ReminderView_assignToUnfiltered;
 	public static String ReminderView_myRemindersAction;
 	public static String ReminderView_myRemindersToolTip;
 	public static String ReminderView_newReminderAction;

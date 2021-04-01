@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2006-2010, G. Weirich and Elexis
+ * Copyright (c) 2016-2021, J. Sigle
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,6 +8,7 @@
  *
  * Contributors:
  *    G. Weirich - initial implementation
+ *    J. Sigle   - Additional options in dropdown menu: "nicht nach Patient filtern (übergeht 'Anzeige nur beim Patienten')" und "nur vom ausgewählten Patienten (übergeht 'Immer in Pendenzen anzeigen')" 
  *    
  *******************************************************************************/
 package ch.elexis.core.ui.views;
@@ -86,6 +88,7 @@ import ch.elexis.core.ui.util.viewers.DefaultLabelProvider;
 import ch.elexis.core.ui.util.viewers.SimpleWidgetProvider;
 import ch.elexis.core.ui.util.viewers.ViewerConfigurer;
 import ch.elexis.core.ui.views.reminder.ReminderStatusSubMenu;
+
 import ch.elexis.data.Anwender;
 import ch.elexis.data.Patient;
 import ch.elexis.data.PersistentObject;
@@ -99,6 +102,8 @@ public class ReminderView extends ViewPart implements IActivationListener, Heart
 	public static final String ID = "ch.elexis.reminderview"; //$NON-NLS-1$
 	
 	private IAction newReminderAction, deleteReminderAction, showOnlyOwnDueReminderToggleAction,
+			overrideShowFromAnyPatientReminderAction,				//201609150117js
+			overrideShowOnlyFromCurrentPatientReminderAction,		//201609150117js
 			showSelfCreatedReminderAction, toggleAutoSelectPatientAction, reloadAction;
 	private IAction sortByDueDate;
 	private RestrictedAction showOthersRemindersAction;
@@ -117,7 +122,7 @@ public class ReminderView extends ViewPart implements IActivationListener, Heart
 		CoreHub.userCfg.get(Preferences.USR_REMINDER_AUTO_SELECT_PATIENT, false);
 	private boolean showOnlyDueReminders =
 		CoreHub.userCfg.get(Preferences.USR_REMINDERSOPEN, false);
-	private boolean showAllReminders = (CoreHub.userCfg.get(Preferences.USR_REMINDEROTHERS, false)
+	private boolean showOthersReminders = (CoreHub.userCfg.get(Preferences.USR_REMINDEROTHERS, false)
 		&& CoreHub.acl.request(AccessControlDefaults.ADMIN_VIEW_ALL_REMINDERS));
 	private boolean showSelfCreatedReminders =
 		CoreHub.userCfg.get(Preferences.USR_REMINDEROWN, false);
@@ -335,7 +340,12 @@ public class ReminderView extends ViewPart implements IActivationListener, Heart
 			new ActionContributionItem(showOnlyOwnDueReminderToggleAction), typeFilterSubMenu, null,
 			new ActionContributionItem(labelResponsibility),
 			new ActionContributionItem(showSelfCreatedReminderAction),
-			new ActionContributionItem(showOthersRemindersAction), null);
+			new ActionContributionItem(showOthersRemindersAction),
+			//20210401js: commented this out, ShowOnlyFromCurrentPatient is a good addition esp. to "Alle"
+			//null,																				
+			new ActionContributionItem(overrideShowFromAnyPatientReminderAction), 				//201609150117js
+			new ActionContributionItem(overrideShowOnlyFromCurrentPatientReminderAction),null	//201609150117js
+			);
 	}
 	
 	private void refreshUserConfiguration(){
@@ -353,6 +363,14 @@ public class ReminderView extends ViewPart implements IActivationListener, Heart
 		// update action's access rights
 		showOthersRemindersAction.reflectRight();
 		
+		//201609150117js: Default is false for this new override option.
+		overrideShowFromAnyPatientReminderAction.setChecked(											//201609150117js
+			CoreHub.userCfg.get(Preferences.USR_REMINDERSOVERRIDESHOWFROMANYPATIENT, false));			//201609150117js
+		
+		//201609150117js: Default is false for this new override option.
+		overrideShowOnlyFromCurrentPatientReminderAction.setChecked(									//201609150117js
+			CoreHub.userCfg.get(Preferences.USR_REMINDERSOVERRIDESHOWONLYFROMCURRENTPATIENT, false));	//201609150117js
+		
 		reminderLabelProvider.updateUserConfiguration();
 	}
 	
@@ -363,8 +381,19 @@ public class ReminderView extends ViewPart implements IActivationListener, Heart
 	public void dispose(){
 		ElexisEventDispatcher.getInstance().removeListeners(eeli_pat, eeli_user, eeli_reminder);
 		GlobalEventDispatcher.removeActivationListener(this, getViewSite().getPart());
+		
+		System.out.println("ReminderView: Preferences.USR_REMINDERSOPEN"+Preferences.USR_REMINDERSOPEN.toString());
+		if (showOnlyOwnDueReminderToggleAction == null) System.out.println("ReminderView: showOnlyOwnDueReminderToggleAction IS NULL");
+		else System.out.println("ReminderView: showOnlyOwnDueReminderToggleAction.isChecked()"+showOnlyOwnDueReminderToggleAction.isChecked());
+		
 		CoreHub.userCfg.set(Preferences.USR_REMINDERSOPEN,
 			showOnlyOwnDueReminderToggleAction.isChecked());
+
+		//ToDo: Review these lines - shall we keep them or leave them commented out? Same question for the line above!			//201609150117js
+		//This would probably dispose of the respective settings at the end of a session,										//201609150117js
+		//but I would rather like to keep them - because JH will probably want to use them regularly.							//201609150117js
+		//CoreHub.userCfg.set(PreferenceConstants.USR_REMINDERSOVERRIDESHOWFROMANYPATIENT, overrideShowFromAnyPatientReminderAction.isChecked());			//201609150117js
+		//CoreHub.userCfg.set(PreferenceConstants.USR_REMINDERSOVERRIDESHOWONLYFROMCURRENTPATIENT, overrideShowOnlyFromCurrentPatientReminderAction.isChecked());	//201609150117js
 	}
 	
 	private Images determineActionTypeImage(Type actionType){
@@ -495,6 +524,7 @@ public class ReminderView extends ViewPart implements IActivationListener, Heart
 					cv.notify(CommonViewer.Message.update_keeplabels);
 				}
 			};
+			
 		showSelfCreatedReminderAction =
 			new Action(Messages.ReminderView_myRemindersAction, Action.AS_CHECK_BOX) { //$NON-NLS-1$
 				{
@@ -518,8 +548,60 @@ public class ReminderView extends ViewPart implements IActivationListener, Heart
 				
 				@Override
 				public void doRun(){
-					showAllReminders = showOthersRemindersAction.isChecked();
-					CoreHub.userCfg.set(Preferences.USR_REMINDEROTHERS, showAllReminders);
+					showOthersReminders = showOthersRemindersAction.isChecked();
+					CoreHub.userCfg.set(Preferences.USR_REMINDEROTHERS, showOthersReminders);
+					cv.notify(CommonViewer.Message.update_keeplabels);
+				}
+			};
+					
+		//201609150117js: originally added this block. 20210331js: restored adopted version to 3.7js
+		overrideShowFromAnyPatientReminderAction =
+			new Action(Messages.ReminderView_overrideShowFromAnyPatientReminderAction, Action.AS_CHECK_BOX) { //$NON-NLS-1$
+				{
+					setToolTipText(Messages.ReminderView_overrideShowFromAnyPatientReminderToolTip); //$NON-NLS-1$
+					setImageDescriptor(Images.IMG_ACHTUNG.getImageDescriptor());
+				}
+				
+				@Override
+				public void run(){
+					boolean bChecked = overrideShowFromAnyPatientReminderAction.isChecked();
+					CoreHub.userCfg.set(Preferences.USR_REMINDERSOVERRIDESHOWFROMANYPATIENT, bChecked);
+					
+					//overrideShowFromAnyPatientReminderAction and overrideShowOnlyFromCurrentPatientReminderAction
+					//CANNOT be active at the same time, they are mutually exclusive in user understanding,
+					//and in the filtering program code below, if overrideShowOnlyFromCurrentPatientReminderAction is true,
+					//then overrideShowOnlyFromCurrentPatientReminderAction will actually be ignored.
+					if (bChecked) {
+						overrideShowOnlyFromCurrentPatientReminderAction.setChecked(false);
+						CoreHub.userCfg.set(Preferences.USR_REMINDERSOVERRIDESHOWONLYFROMCURRENTPATIENT, false);
+					}
+						
+					cv.notify(CommonViewer.Message.update_keeplabels);
+				}
+			};
+
+		//201609150117js: originally added this block. 20210331js: restored adopted version to 3.7js
+		overrideShowOnlyFromCurrentPatientReminderAction =
+			new Action(Messages.ReminderView_overrideShowOnlyFromCurrentPatientReminderAction, Action.AS_CHECK_BOX) { //$NON-NLS-1$
+				{
+					setToolTipText(Messages.ReminderView_overrideShowOnlyFromCurrentPatientReminderTooltip); //$NON-NLS-1$
+					setImageDescriptor(Images.IMG_ACHTUNG.getImageDescriptor());
+				}
+			
+				@Override
+				public void run(){
+					boolean bChecked = overrideShowOnlyFromCurrentPatientReminderAction.isChecked();
+					CoreHub.userCfg.set(Preferences.USR_REMINDERSOVERRIDESHOWONLYFROMCURRENTPATIENT, bChecked);
+						
+					//overrideShowFromAnyPatientReminderAction and overrideShowOnlyFromCurrentPatientReminderAction
+					//CANNOT be active at the same time, they are mutually exclusive in user understanding,
+					//and in the filtering program code below, if overrideShowOnlyFromCurrentPatientReminderAction is true,
+					//then overrideShowOnlyFromCurrentPatientReminderAction will actually be ignored.
+					if (bChecked) {
+						overrideShowFromAnyPatientReminderAction.setChecked(false);
+						CoreHub.userCfg.set(Preferences.USR_REMINDERSOVERRIDESHOWFROMANYPATIENT, false);
+					}
+
 					cv.notify(CommonViewer.Message.update_keeplabels);
 				}
 			};
@@ -736,35 +818,77 @@ public class ReminderView extends ViewPart implements IActivationListener, Heart
 		private String filterText;
 		
 		@Override
-		public boolean select(final Viewer viewer, final Object parentElement,
-			final Object element){
+		public boolean select(final Viewer viewer, final Object parentElement, 
+			final Object element) {
 			
 			if (element instanceof Reminder) {
 				Reminder check = (Reminder) element;
+				
+				//201609150117js: The following preexisting code removes certain reminders from the list,
+				//based on their status, onlyOpenReminderAction.isChecked, and .getDateDue().
+				//N.B.: An "open" reminder is one, who has not been marked "completed" or "done" yet.
+				
 				if (showOnlyOwnDueReminderToggleAction.isChecked()) {
 					int determineDueState = Reminder.determineDueState(check.getDateDue());
 					if (determineDueState == 0) {
 						return false;
 					}
 				}
+
+				//201609150117js: The following (partly preexisting) code removes certain reminders from the list,
+				//based upon the flags: "Anzeige nur beim Patienten" = no special Reminder.Typ.*, as far as I can see, 
+				//and "Immer in Pendenzen anzeigen" = Reminder.Typ.anzeigeToDoAll.
+				
+				//I added two override options in the pulldown menu here:
+				//overrideShowFromAnyPatientReminderAction.isChecked() and
+				//overrideShowOnlyFromCurrentPatientReminderAction.isChecked().
+				
+				//These are both *different* from what stock Elexis 3.x originally provides:
+				
+				//Even now, the option labeled "Alle" in stock Elexis 3.x does not mean
+				//"show reminders related to all patients" - but: "show reminders for any user being responsible".
+				//And in the third section, stock Elexis 3.x shows only those reminders
+				//So my overrideShowFromAnyPatientReminderAction is still useful.
+				
+				//The other way round, my overrideShowOnlyFromCurrentPatientReminderAction
+				//can stop the display even of those reminders with the "show always" flag,
+				//if data protection or a very compact list are truly desired.
+								
+				//201609150117js: Checking reminder IdentID vs. selected patient ID can be overridden,
+				//so that reminders from any patient are shown, no matter which one is selected.
+				//This overrides the reminder option: "Anzeige nur beim Patienten"
+					 
 				Patient act = ElexisEventDispatcher.getSelectedPatient();
 				String patientId = (act != null) ? act.getId() : "INVALID_ID";
-				String[] vals = check.get(true, Reminder.FLD_SUBJECT, Reminder.FLD_MESSAGE,
-					Reminder.FLD_KONTAKT_ID, Reminder.FLD_VISIBILITY);
-				if (!vals[2].equals(patientId)) {
+					
+				String[] vals = check.get(true,
+						Reminder.FLD_SUBJECT, Reminder.FLD_MESSAGE,
+						Reminder.FLD_KONTAKT_ID, Reminder.FLD_VISIBILITY);
+
+				if (  !overrideShowFromAnyPatientReminderAction.isChecked()
+				   && !vals[2].equals(patientId)) {
+						
 					Visibility vis = Visibility.byNumericSafe(vals[3]);
-					if (vis != Visibility.ALWAYS && vis != Visibility.POPUP_ON_LOGIN ) {
-						// other (non-selected patient) and not marked always visible
+
+					//20210401js: This override can even gain priority over
+					//"Visibility Always" - but NOT over "Popup_on_login"
+					if (  overrideShowOnlyFromCurrentPatientReminderAction.isChecked() //201609150117js
+					   && (vis != Visibility.POPUP_ON_LOGIN) ) 
 						return false;
-					}
+						
+					if (  vis != Visibility.ALWAYS 
+					   && vis != Visibility.POPUP_ON_LOGIN )
+						// other (non-selected patient) and not marked always visible
+						return false;	
 				}
 				
 				if (filterText != null && filterText.length() > 0) {
 					if (!StringUtils.containsIgnoreCase(vals[0], filterText)
 						&& !StringUtils.containsIgnoreCase(vals[1], filterText)) {
-						return false;
+					return false;
 					}
 				}
+				
 			}
 			return true;
 		}
@@ -824,7 +948,7 @@ public class ReminderView extends ViewPart implements IActivationListener, Heart
 			
 			SortedSet<Reminder> reminders = new TreeSet<Reminder>();
 			
-			if (showAllReminders
+			if (showOthersReminders
 				&& CoreHub.acl.request(AccessControlDefaults.ADMIN_VIEW_ALL_REMINDERS)) {
 				qbe.clear();
 				if(filterDueDateDays != -1) {
@@ -876,13 +1000,64 @@ public class ReminderView extends ViewPart implements IActivationListener, Heart
 			}
 			
 			List<Object> resultList = new ArrayList<>();
-			resultList.add("------------ Aktueller Patient");
+			
+			//20210401js: As first entry, show responsible user and some options from the pulldown menu.
+			//Alternatively, we could add 3d toggle buttons at the top of the window -
+			//that would be nicer, but need more work than I want to do now.
+			StringBuilder selectedOptions = new StringBuilder(Messages.ReminderView_assignTo+": ");
+			if (showOthersReminders)
+				selectedOptions.append(Messages.ReminderView_assignToUnfiltered+"     ");
+			else
+				selectedOptions.append(CoreHub.actUser.getKuerzel()+"     ");
+			
+			if (showOnlyOwnDueReminderToggleAction.isChecked())
+				selectedOptions.append(Messages.ReminderView_onlyDueAction+"     ");
+			
+			if (showSelfCreatedReminders)
+				selectedOptions.append(Messages.ReminderView_myRemindersAction+"     ");			
+				
+			resultList.add(selectedOptions);
+			
+			//TODO: Move the following strings into the messages*.properties
+			//and 2 x Messages.java files, and translate them.
+			
+			//TODO: Review the exact functionality of the "Von mir erstellte" menu option 
+			
+			//20210401js: 
+			if (actPatient == null) resultList.add("------------ Aktueller Patient: -");
+			else 	resultList.add("------------ Aktueller Patient:  "
+					+actPatient.getName()+" "+actPatient.getVorname()+"  "
+					+actPatient.getGeburtsdatum()+"  ("+actPatient.getAlter()+")  "+actPatient.getGeschlecht());
 			resultList.addAll(patientRelatedRemindersCurrentPatient);
+			
+			//20210401js: The section "Allgemein" is kept visible
+			//even when overrideShowOnlyFromCurrentPatientReminderAction is set:
+			//We don't want to miss individual responsibilities even when we
+			//use this flag to keep other patient's information off the display
+			//for data protection reasons.
 			resultList.add("------------ Allgemein");
 			resultList.addAll(otherReminders);
-			resultList
-				.add("------------ Patientenbezogen (nicht aktueller Patient, immer anzeigen)");
-			resultList.addAll(patientRelatedReminders);
+			
+			//20210401js: Don't show the (then misleading) extra section headings
+			//when overrideShowOnlyFromCurrentPatientReminderAction is checked -
+			//in that case, show a note so users know *that* and *why* the display ends here.
+			//Please note: Reminders with popup_at_login should still be displayed
+			//as (1) they are probably the most important ones,
+			//and (b) they don't appear on this list and are visible only in a controlled situation.
+			if (overrideShowOnlyFromCurrentPatientReminderAction.isChecked())
+				resultList.add("------------ "+Messages.ReminderView_overrideShowOnlyFromCurrentPatientReminderAction);
+			else {			
+				//20210401js: For reminders related to other patients:
+				//show them either because the reminder has the "Immer anzeigen" property,
+				//or because overrideShowFromAnyPatientReminderAction is checked -
+				//and show the currently active option in the line above that section of the list.
+				if (overrideShowFromAnyPatientReminderAction.isChecked())
+					resultList.add("------------ Patientenbezogen - für andere Patienten - "
+							+Messages.ReminderView_overrideShowFromAnyPatientReminderAction);
+				else
+					resultList.add("------------ Patientenbezogen - für andere Patienten, aber mit \"immer anzeigen\"");
+				resultList.addAll(patientRelatedReminders);
+			}
 			
 			return resultList.toArray();
 		}
