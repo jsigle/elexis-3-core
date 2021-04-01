@@ -35,6 +35,7 @@ import ch.elexis.core.ui.preferences.inputs.ComboFieldEditor;
 import ch.elexis.core.ui.preferences.inputs.MultilineFieldEditor;
 import ch.elexis.core.ui.util.SWTHelper;
 import ch.elexis.data.Patient;
+import ch.elexis.data.Person;
 import ch.rgw.tools.StringTool;
 
 public class UserSettings2 extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
@@ -58,6 +59,10 @@ public class UserSettings2 extends FieldEditorPreferencePage implements IWorkben
 		prefs.setDefault(Preferences.USR_PATLIST_SHOWFIRSTNAME, true);
 		prefs.setDefault(Preferences.USR_PATLIST_SHOWDOB, true);
 		prefs.setDefault(Preferences.USR_SUPPRESS_INTERACTION_CHECK, true);
+		
+		//20210402js:
+		prefs.setDefault(Preferences.USR_PERSON_GETPERSONALIA_TEMPLATE, Person.personaliaTemplates[Person.personaliaDefaultTemplate]);
+
 	}
 	
 	@Override
@@ -73,8 +78,10 @@ public class UserSettings2 extends FieldEditorPreferencePage implements IWorkben
 				}
 			
 			}, getFieldEditorParent()));
+		
 		new Label(getFieldEditorParent(), SWT.SEPARATOR | SWT.HORIZONTAL).setLayoutData(SWTHelper
 			.getFillGridData(2, true, 1, false));
+	
 		new Label(getFieldEditorParent(), SWT.NONE).setText(Messages.UserSettings2_FieldsInList);
 		addField(new BooleanFieldEditor(Preferences.USR_PATLIST_SHOWPATNR,
 			Messages.UserSettings2_PatientNr, getFieldEditorParent()));
@@ -86,13 +93,21 @@ public class UserSettings2 extends FieldEditorPreferencePage implements IWorkben
 			Messages.UserSettings2_Birthdate, getFieldEditorParent()));
 		addField(new ComboFieldEditor(Preferences.USR_PATLIST_FOCUSFIELD, "Fokusfeld",
 			patlistFocusFields, getFieldEditorParent()));
+		
 		new Label(getFieldEditorParent(), SWT.SEPARATOR | SWT.HORIZONTAL).setLayoutData(SWTHelper
 			.getFillGridData(2, true, 1, false));
+		
 		new Label(getFieldEditorParent(), SWT.NONE)
 			.setText(Messages.UserSettings2_AddidtionalFields);
 		addField(new MultilineFieldEditor(Patientenblatt2.CFG_EXTRAFIELDS, StringTool.leer, 5,
 			SWT.NONE, true, getFieldEditorParent()));
-		
+
+		new Label(getFieldEditorParent(), SWT.SEPARATOR | SWT.HORIZONTAL).setLayoutData(SWTHelper
+				.getFillGridData(2, true, 1, false));
+
+		addField(new ComboFieldEditor(Preferences.USR_PERSON_GETPERSONALIA_TEMPLATE, "getPersonalia Template String",
+				Person.personaliaTemplates, getFieldEditorParent()));
+	
 	}
 	
 	public void init(IWorkbench workbench){

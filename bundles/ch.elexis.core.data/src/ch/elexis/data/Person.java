@@ -234,11 +234,7 @@ public class Person extends Kontakt {
 	//Finally, return the result.
 	//
 	
-	int personaliaDefaultTemplate = 5;
-	public boolean personaliaDefaultWithAge = false;
-	public boolean personaliaDefaultWithKuerzel = false;
-	
-	public String[] personaliaTemplates = {
+	public static String[] personaliaTemplates = {
 	//Stock Elexis 3.x format:
 	//Mustermann Max (m), 01.02.1934, Dipl. biol.
 	//Mustermann Max (m), 01.02.1934 (88), Dipl. biol.
@@ -277,7 +273,11 @@ public class Person extends Kontakt {
 	"[NAME]| [FIRSTNAME]|  [AGE]|  [BIRTHDATE]|  [SEX]|  [TITLE]|  [[KUERZEL]]"
 	};
 
-		String personaliaRemoveUnreplacedSections(String a, String sectionIdentifier) {
+	public static int personaliaDefaultTemplate = 0;
+	boolean personaliaDefaultWithAge = false;
+	boolean personaliaDefaultWithKuerzel = false;
+
+	String personaliaRemoveUnreplacedSections(String a, String sectionIdentifier) {
 		if ( StringTool.isNothing(a) || StringTool.isNothing(sectionIdentifier) ) return a; 
 		int posFound = a.indexOf(sectionIdentifier);
 		if ( posFound < 0 ) return a; 

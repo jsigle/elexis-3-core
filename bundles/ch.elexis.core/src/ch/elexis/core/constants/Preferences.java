@@ -168,6 +168,10 @@ public class Preferences {
 	public static final String USR_SERVICES_DIAGNOSES_CODES = "servicediagnose/codes";
 	public static final String USR_AGENDAFONT = "anwender/agendafont"; //$NON-NLS-1$
 	
+	//20210402js:
+	public static final String USR_PERSON_GETPERSONALIA_TEMPLATE = "anwender/getpersonaliatemplate"; //$NON-NLS-1$
+	
+	
 	// Menu item "lock perspectives" (GlobalActions.fixLayoutAction)
 	public static final String USR_FIX_LAYOUT = "perspectives/fix_layout"; //$NON-NLS-1$
 	public static final boolean USR_FIX_LAYOUT_DEFAULT = false;
