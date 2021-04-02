@@ -64,7 +64,19 @@ public class UserSettings2 extends FieldEditorPreferencePage implements IWorkben
 		//20210402js:
 		prefs.setDefault(Preferences.USR_PERSON_GETPERSONALIA_TEMPLATE,
 				Person.personaliaDefaultTemplateStr);
-
+		//This is a separately configurable format, to be used in Patientenliste
+		//and others who call getPersonalia() as supplier of a long getLabel().
+		//This template can be used to have e.g.
+		//Muster Max  01.02.1934  m  88
+		//or simply
+		//Muster Max  01.02.1934  m
+		//or the old
+		//Muster Max (m), 01.02.1934
+		//in the Patientenliste, while at the same time using
+		//Muster Max  87  m  01.02.1934  Dipl. biol.  [262]
+		//at other places throughout the program.
+		prefs.setDefault(Preferences.USR_PERSON_GETPERSONALIA_TEMPLATE_PATIENT_GETLABEL,
+				Person.personaliaDefaultTemplateStr);
 	}
 	
 	@Override
@@ -110,6 +122,10 @@ public class UserSettings2 extends FieldEditorPreferencePage implements IWorkben
 
 		addField(new ComboFieldEditor(Preferences.USR_PERSON_GETPERSONALIA_TEMPLATE,
 				"getPersonalia Template String",
+				Person.personaliaTemplates, getFieldEditorParent()));
+		
+		addField(new ComboFieldEditor(Preferences.USR_PERSON_GETPERSONALIA_TEMPLATE_PATIENT_GETLABEL,
+				"Patient.getLabel Template String",
 				Person.personaliaTemplates, getFieldEditorParent()));
 	}
 	

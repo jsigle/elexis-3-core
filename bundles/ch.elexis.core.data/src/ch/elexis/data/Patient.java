@@ -604,7 +604,7 @@ public class Patient extends Person {
 			//But for now, I make one step back, and use ONLY the version
 			//with Age, but without the Kuerzel = Patientennummer here.
 			//Even the age is indeed an addition which wasn't here before the switch to the new getPersonalia(),
-			return getPersonaliaWithUSRConfStrWithAge();
+			//return getPersonaliaWithUSRConfStrWithAge();
 
 			//If the age is too much as well, just turn to the next variant:
 			//return getPersonaliaWithUSRConfStr();
@@ -612,6 +612,18 @@ public class Patient extends Person {
 			//And if the old format is definitely needed, just use the original call from above again.
 			//When called without parameters, the new implementation uses a default setting
 			//that should be completely pin-compatible with the original one.
+			
+			//Well, now I actually supplied a second configurable template string
+			//specifically for using it here. So I use the completely flexible way
+			//to call the new getPersonalia() and supply exactly this string.
+			//To compensate for this, I use a shortened template string as default
+			//fallback to be used while nothing else if nothing is configured.
+			//I also supply withAge and withKuerzel, so the template string
+			//can fully control what will actually appear:
+			return getPersonalia(CoreHub.userCfg.get(Preferences.
+					USR_PERSON_GETPERSONALIA_TEMPLATE_PATIENT_GETLABEL,
+					personaliaDefaultTemplateStr),	
+					personaliaWithAge, personaliaWithKuerzel);
 		}
 	}
 	

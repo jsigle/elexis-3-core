@@ -194,6 +194,7 @@ public class Person extends Kontakt {
 		return ret.toString();
 	}
 	
+
 	/*
 	 * Einen String mit den Personalien holen.
 	 *
@@ -238,13 +239,34 @@ public class Person extends Kontakt {
 	//Finally, return the result.
 	//
 	
+
+	
 	public static String[] personaliaTemplates = {
-	//Stock Elexis 3.x format:
+	//Stock Elexis 3.x format.
+	//Not delivering AGE nor KUERZEL, even when the respective flags are true.
+	//This is needed to allow configurability of AGE and KUERZEL completely
+	//through the supplied template string for the Patiente.getLabel() case.
+	//TODO: put the flags onto the UserSettings2.java config page, too...
+	//Mustermann Max (m), 01.02.1934, Dipl. biol.
+	"[NAME]| [FIRSTNAME]| ([SEX])|, [BIRTHDATE]|, [TITLE]",
+
+	//Stock Elexis 3.x format plus Age and/or Kuerzel depending on their flags:
 	//Mustermann Max (m), 01.02.1934, Dipl. biol.
 	//Mustermann Max (m), 01.02.1934 (88), Dipl. biol.
 	//Mustermann Max (m), 01.02.1934 Dipl. biol. - [496]
 	//Mustermann Max (m), 01.02.1934 (88), Dipl. biol. - [496]
 	"[NAME]| [FIRSTNAME]| ([SEX])|, [BIRTHDATE]|, ([AGE])|, [TITLE] - [[KUERZEL]]",
+
+	//Simple format with the same elements as Stock Elexis 3.x format,
+	//in different order to work without separation chars. 
+	//Not delivering AGE nor KUERZEL, even when the respective flags are true.
+	//This is needed to allow configurability of AGE and KUERZEL completely
+	//through the supplied template string for the Patiente.getLabel() case.
+	//TODO: put the flags onto the UserSettings2.java config page, too...
+	//Intended as a replacement for the Stock Elexis 3.x format for Patientenliste -
+	//as long as there other clients can live with getting this through Patient.getLabel()...
+	//Mustermann Max  01.02.1934  m  Dipl. biol.
+	"[NAME]| [FIRSTNAME]|  [BIRTHDATE]|  [SEX]|  [TITLE]",
 
 	//Mustermann Max  (m)  01.02.1934  Dipl. biol.
 	//Mustermann Max  (m)  01.02.1934  (88)  Dipl. biol.
@@ -300,10 +322,14 @@ public class Person extends Kontakt {
 	//Mustermann Max  m  01.02.1934  Dipl. biol.  [496]
 	//Mustermann Max  88  m  01.02.1934  Dipl. biol.  [496]
 	"[NAME]| [FIRSTNAME]|  [AGE]|  [SEX]|  [BIRTHDATE]|  [TITLE]|  [[KUERZEL]]"
+		
 	};
 
+	
+	public static int personaliaTemplateDefault=0;
+	public static int personaliaTemplateDefaultPlusAgeKuerzel=1;
 	public static String personaliaDefaultTemplateStr =			//20210402js: stay compatible with the original implementation
-			personaliaTemplates[0]; 
+			personaliaTemplates[personaliaTemplateDefault];     //not delivering AGE and KUERZEL even when the flags are true. 
 	public static boolean personaliaDefaultWithAge = false;		//20210402js: stay compatible with the original implementation
 	public static boolean personaliaDefaultWithKuerzel = false;	//20210402js: stay compatible with the original implementation
 	public static boolean personaliaWithAge = true;				//20210402js: allow for easily comprehensible calls
@@ -330,6 +356,8 @@ public class Person extends Kontakt {
 	
 	
 	//20210402js: This method overload provides compatibility with the original version
+	//Actually, either the usage of personalDefaultTemplateStr
+	//or the default flags would suffice individually to suppress AGE and KUERZEL.  
 	public String getPersonalia() {
 		return getPersonalia(personaliaDefaultTemplateStr,
 				personaliaDefaultWithAge, personaliaDefaultWithKuerzel);

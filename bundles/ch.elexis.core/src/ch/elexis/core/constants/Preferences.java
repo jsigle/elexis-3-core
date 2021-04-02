@@ -170,7 +170,7 @@ public class Preferences {
 	
 	//20210402js:
 	public static final String USR_PERSON_GETPERSONALIA_TEMPLATE = "anwender/getpersonaliatemplate"; //$NON-NLS-1$
-	
+	public static final String USR_PERSON_GETPERSONALIA_TEMPLATE_PATIENT_GETLABEL = "anwender/getpersonaliatemplatepatientgetlabel"; //$NON-NLS-1$
 	
 	// Menu item "lock perspectives" (GlobalActions.fixLayoutAction)
 	public static final String USR_FIX_LAYOUT = "perspectives/fix_layout"; //$NON-NLS-1$
