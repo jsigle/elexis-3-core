@@ -168,7 +168,7 @@ public class AccessControlDefaults {
 		
 	public static final ACE ADMIN_KONS_EDIT_IF_BILLED =
 		new ACE(ADMIN_KONS, "change_billed", Messages.AccessControlDefaults_changeBilled); //$NON-NLS-1$
-	public static final ACE ADMIN_VIEW_ALL_REMINDERS =
+	public static final ACE ADMIN_VIEW_OTHERS_REMINDERS =
 		new ACE(ADMIN_REMINDERS, "viewAll", Messages.AccessControlDefaults_viewAll); //$NON-NLS-1$
 	public static final ACE ADMIN_CHANGE_BILLSTATUS_MANUALLY =
 		new ACE(ADMIN_BILLS, "changeManually", Messages.AccessControlDefaults_changeStateManually); //$NON-NLS-1$
