@@ -147,31 +147,40 @@ public class Hub extends AbstractUIPlugin {
 	public static void setWindowText(Patient pat){
 		StringBuilder sb = new StringBuilder();
 		sb.append("Elexis ").append(CoreHub.readElexisBuildVersion()).append(" - "); //$NON-NLS-1$ //$NON-NLS-2$
+		
 		if (CoreHub.actUser == null) {
 			sb.append(Messages.Hub_nouserloggedin);
 		} else {
 			sb.append(" ").append(CoreHub.actUser.getLabel()); //$NON-NLS-1$
 		}
+		
 		if (CoreHub.actMandant == null) {
 			sb.append(Messages.Hub_nomandantor);
 			
 		} else {
 			sb.append(" / ").append(CoreHub.actMandant.getLabel()); //$NON-NLS-1$
 		}
+		
 		if (pat == null) {
 			pat = (Patient) ElexisEventDispatcher.getSelected(Patient.class);
 		}
 		if (pat == null) {
 			sb.append(Messages.Hub_nopatientselected);
 		} else {
+		
+			//20210402js: replace this by a call to the new configurable getPersonalia() 
+			/*
 			String nr = pat.getPatCode();
 			String alter = pat.getAlter();
 			sb.append("  / ").append(pat.getLabel()).append(" (").append(alter).append(") - ") //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				.append("[").append(nr).append("]"); //$NON-NLS-1$ //$NON-NLS-2$
+			*/
+			sb.append(" / "+pat.getPersonaliaWithUSRConfStrWithAgeWithKuerzel());
 			
 			if (Reminder.findForPatient(pat, CoreHub.actUser).size() != 0) {
 				sb.append(Messages.Hub_message_reminders);
 			}
+			
 			String act = new TimeTool().toString(TimeTool.DATE_COMPACT);
 			TimeTool ttPatg = new TimeTool();
 			if (ttPatg.set(pat.getGeburtsdatum())) {

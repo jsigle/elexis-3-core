@@ -9,7 +9,8 @@
  *
  * Contributors:
  *    G. Weirich -  initial implementation
- *    Joerg Sigle - Added ability to copy selected addresses to the clipboard
+ *    J. Sigle   -  Added ability to copy selected addresses to the clipboard
+ *    				Changed to use improved configurable getPersonalia()
  *    
  *******************************************************************************/
 
@@ -806,9 +807,13 @@ public class Patientenblatt2 extends Composite implements IUnlockable {
 			return;
 		}
 		stickerComposite.setPatient(actPatient);
-		form.setText(StringTool.unNull(actPatient.getName()) + StringConstants.SPACE
-			+ StringTool.unNull(actPatient.getVorname()) + " (" //$NON-NLS-1$
-			+ actPatient.getPatCode() + ")"); //$NON-NLS-1$
+		
+		//20210402js: replace this by a call to the new configurable getPersonalia() 
+		//form.setText(StringTool.unNull(actPatient.getName()) + StringConstants.SPACE
+		//	+ StringTool.unNull(actPatient.getVorname()) + " (" //$NON-NLS-1$
+		//	+ actPatient.getPatCode() + ")"); //$NON-NLS-1$
+		form.setText(StringTool.unNull(actPatient.getPersonaliaWithUSRConfStrWithAgeWithKuerzel()));
+		
 		inpAdresse.setText(actPatient.getPostAnschrift(false), false, false);
 		UserSettings.setExpandedState(ecZA,  "Patientenblatt/Zusatzadressen"); //$NON-NLS-1$
 		inpZusatzAdresse.clear();

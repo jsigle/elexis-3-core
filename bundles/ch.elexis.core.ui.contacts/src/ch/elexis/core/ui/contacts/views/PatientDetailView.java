@@ -7,6 +7,7 @@
  * 
  * Contributors:
  *     MEDEVIT <office@medevit.at> - initial API and implementation
+ *     J. Sigle   - uses improved getPersonalia() 
  ******************************************************************************/
 package ch.elexis.core.ui.contacts.views;
 
@@ -158,8 +159,12 @@ public class PatientDetailView extends ViewPart implements IUnlockable, IActivat
 
 	void setPatient(Patient p) {
 		patientObservable.setValue(p);
-		scrldfrm.setText(StringTool.unNull(p.getName()) + StringConstants.SPACE + StringTool.unNull(p.getVorname())
-				+ " (" + p.getPatCode() + ")");
+		
+		//20210402js: replace this by a call to the new configurable getPersonalia() 
+		//scrldfrm.setText(StringTool.unNull(p.getName()) + StringConstants.SPACE + StringTool.unNull(p.getVorname())
+		//		+ " (" + p.getPatCode() + ")");
+		scrldfrm.setText(StringTool.unNull(p.getPersonaliaWithUSRConfStrWithAgeWithKuerzel()));
+		
 		compClientCustomText.updateClientCustomArea();
 		stickerComposite.setPatient(p);
 		inpZusatzAdresse.clear();

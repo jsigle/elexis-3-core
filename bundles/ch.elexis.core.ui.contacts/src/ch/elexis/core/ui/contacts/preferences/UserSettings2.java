@@ -7,6 +7,7 @@
  *
  * Contributors:
  *    G. Weirich - initial implementation
+ *    J. Sigle   - Added support for configurable getPersonlia()
  *    
  *******************************************************************************/
 

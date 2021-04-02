@@ -8,6 +8,7 @@
  * Contributors:
  *    G. Weirich - initial implementation
  *    M. Descher - added loadByPatientID
+ *    J. Sigle   - Changed to use improved configurable getPersonalia() in getLabel()
  * 
  *******************************************************************************/
 package ch.elexis.data;
@@ -587,7 +588,30 @@ public class Patient extends Person {
 		if (shortLabel) {
 			return super.getLabel(true);
 		} else {
-			return getPersonalia();
+			//20210402js: replaced this by a call to the new configurable getPersonalia():
+			//return getPersonalia();
+
+			//This one uses additionally provides the Age and Kuerzel = Patientennummer.
+			//Now, this is somewhat bold in here, as getLabel() might be called from numerous places,
+			//and some of callers might append the patient's age or Kuerzel by themselves.
+			
+			//Finally, this *IS* the source that fills the Patientenliste -
+			//and we might not want to crowd this place by adding the [PID] at the end of each line -
+			//after all the effort undertaken to remove commas and brackets beforehand -
+			//even though it still looks at least *somewhat* acceptable with all the extra info, too.
+			//return getPersonaliaWithUSRConfStrWithAgeWithKuerzel();
+			
+			//But for now, I make one step back, and use ONLY the version
+			//with Age, but without the Kuerzel = Patientennummer here.
+			//Even the age is indeed an addition which wasn't here before the switch to the new getPersonalia(),
+			return getPersonaliaWithUSRConfStrWithAge();
+
+			//If the age is too much as well, just turn to the next variant:
+			//return getPersonaliaWithUSRConfStr();
+
+			//And if the old format is definitely needed, just use the original call from above again.
+			//When called without parameters, the new implementation uses a default setting
+			//that should be completely pin-compatible with the original one.
 		}
 	}
 	

@@ -9,6 +9,8 @@
  * Contributors:
  *    G. Weirich - initial implementation
  *    M. Descher - Declarative access to the contextMenu
+ *    J. Sigle   - Added ability to copy selected addresses to the clipboard
+ *                 Changed to use improved configurable getPersonalia() 
  *******************************************************************************/
 
 package ch.elexis.core.ui.contacts.views;

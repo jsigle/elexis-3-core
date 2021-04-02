@@ -1,5 +1,6 @@
 /*******************************************************************************
- * Copyright (c) 2005-2009, G. Weirich and Elexis
+ * Copyright (c) 2005-2009, G. Weirich and Elexis, Copyright (c) 2021 J. Sigle
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,6 +8,7 @@
  *
  * Contributors:
  *    G. Weirich - initial implementation
+ *    J. Sigle   - replaced getPersonalia() by configurable version
  * 
  *******************************************************************************/
 
@@ -341,6 +343,20 @@ public class Person extends Kontakt {
 	}
 
 	//20210402js: This method overload provides even more convenient calling with user configured template, age & kuerzel
+	public String getPersonaliaWithUSRConfStrWithAge() {
+		return getPersonalia(CoreHub.userCfg.get(Preferences.USR_PERSON_GETPERSONALIA_TEMPLATE,
+								Person.personaliaDefaultTemplateStr),	
+								personaliaWithAge, personaliaWithoutKuerzel);
+	}
+
+	//20210402js: This method overload provides even more convenient calling with user configured template, age & kuerzel
+	public String getPersonaliaWithUSRConfStrWithKuerzel() {
+		return getPersonalia(CoreHub.userCfg.get(Preferences.USR_PERSON_GETPERSONALIA_TEMPLATE,
+								Person.personaliaDefaultTemplateStr),	
+								personaliaWithoutAge, personaliaWithKuerzel);
+	}
+
+		//20210402js: This method overload provides even more convenient calling with user configured template, age & kuerzel
 	public String getPersonaliaWithUSRConfStrWithAgeWithKuerzel() {
 		return getPersonalia(CoreHub.userCfg.get(Preferences.USR_PERSON_GETPERSONALIA_TEMPLATE,
 								Person.personaliaDefaultTemplateStr),	
@@ -376,17 +392,30 @@ public class Person extends Kontakt {
 		//BTW: This has the nice side effect of NOT providing future mega-security-holes,
 		//which might open up if a more generalized method unexpectedly learned to process
 		//random user-provided SQL queries in a completely uncontrolled manner, after just
-		//a few iterations of replacing simple local methods by omnipotent library functions... 
-		ret = ret.replaceAll(Pattern.quote("[NAME]"),vals[0]);
-		ret = ret.replaceAll(Pattern.quote("[FIRSTNAME]"),vals[1]);
-		ret = ret.replaceAll(Pattern.quote("[BIRTHDATE]"),vals[2]);
-		ret = ret.replaceAll(Pattern.quote("[SEX]"),vals[3]);
-		ret = ret.replaceAll(Pattern.quote("[TITLE]"),vals[4]);
-		if ( (withAge) && (istPatient()) ) {		//istPatient() bedeutet letztlich: this.istPatient()
-			Patient pat = Patient.load(getId());	//same for getID() here, getKuerzeln() below
-			ret = ret.replaceAll(Pattern.quote("[AGE]"),pat.getAlter());
+		//a few iterations of replacing simple local methods by omnipotent library functions...
+		//
+		//Tests for emptiness of replace strings are important. We DO NOT want to replace
+		//a section identifier with an empty string or a space, and thereby (at least)
+		//hinder the removal of surrounding spacers, brackets etc. in pass 2, and possibly
+		//even add more meaningless empty space in the middle of the return string,
+		//or at it's end, which may also become visible when a caller appends something later on.
+		
+		if ( !StringTool.isNothing(vals[0]) ) ret = ret.replaceAll(Pattern.quote("[NAME]"),vals[0]);
+		if ( !StringTool.isNothing(vals[1]) ) ret = ret.replaceAll(Pattern.quote("[FIRSTNAME]"),vals[1]);
+		if ( !StringTool.isNothing(vals[2]) ) ret = ret.replaceAll(Pattern.quote("[BIRTHDATE]"),vals[2]);
+		if ( !StringTool.isNothing(vals[3]) ) ret = ret.replaceAll(Pattern.quote("[SEX]"),vals[3]);
+		if ( !StringTool.isNothing(vals[4]) ) ret = ret.replaceAll(Pattern.quote("[TITLE]"),vals[4]);
+		if ( withAge && istPatient() ) {			//istPatient() bedeutet letztlich: this.istPatient()
+			Patient pat = Patient.load(getId());	//same for getID() here and getKuerzeln() below
+			String a = pat.getAlter();
+			if ( !StringTool.isNothing(a) )
+				ret = ret.replaceAll(Pattern.quote("[AGE]"),a);
 		}
-		if (withKuerzel) ret = ret.replaceAll(Pattern.quote("[KUERZEL]"),getKuerzel());
+		if ( withKuerzel) {
+			String a = getKuerzel();
+			if ( !StringTool.isNothing(a) ) 
+				ret = ret.replaceAll(Pattern.quote("[KUERZEL]"),a);
+		}
 
 		//Second Pass:
 		//Scan for sections with identifiers that have NOT been replaced yet.

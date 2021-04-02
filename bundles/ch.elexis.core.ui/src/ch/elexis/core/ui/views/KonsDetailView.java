@@ -7,6 +7,7 @@
  *
  * Contributors:
  *    G. Weirich - initial implementation
+ *    J. Sigle   - uses improved getPersonalia()
  *******************************************************************************/
 
 package ch.elexis.core.ui.views;

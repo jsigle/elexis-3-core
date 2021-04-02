@@ -1,6 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006-2010, G. Weirich and Elexis
- * Copyright (c) 2016-2021, J. Sigle
+ * Copyright (c) 2006-2010, G. Weirich and Elexis, Copyright (c) 2016-2021, J. Sigle
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,7 +7,8 @@
  *
  * Contributors:
  *    G. Weirich - initial implementation
- *    J. Sigle   - Additional options in dropdown menu: "nicht nach Patient filtern (übergeht 'Anzeige nur beim Patienten')" und "nur vom ausgewählten Patienten (übergeht 'Immer in Pendenzen anzeigen')" 
+ *    J. Sigle   - Additional filter options in dropdown menu,
+ *                 Display of responsible user, several options, and patient info  
  *    
  *******************************************************************************/
 package ch.elexis.core.ui.views;
@@ -1026,8 +1026,12 @@ public class ReminderView extends ViewPart implements IActivationListener, Heart
 			//20210401js: 
 			if (actPatient == null) resultList.add("------------ Aktueller Patient: -");
 			else 	resultList.add("------------ Aktueller Patient:  "
-					+actPatient.getName()+" "+actPatient.getVorname()+"  "
-					+actPatient.getGeburtsdatum()+"  ("+actPatient.getAlter()+")  "+actPatient.getGeschlecht());
+					//20210402js: replaced by call to new getPersonalia() with Age (and Title)
+					//+actPatient.getName()+" "+actPatient.getVorname()+"  "
+					//+actPatient.getGeburtsdatum()+"  ("+actPatient.getAlter()+")  "+actPatient.getGeschlecht());
+					//We don't need to see the Kuerzel = patient number here;
+					//After all, a click on an entry can automatically activate the patient...
+					+actPatient.getPersonaliaWithUSRConfStrWithAge());
 			resultList.addAll(patientRelatedRemindersCurrentPatient);
 			
 			//20210401js: The section "Allgemein" is kept visible
