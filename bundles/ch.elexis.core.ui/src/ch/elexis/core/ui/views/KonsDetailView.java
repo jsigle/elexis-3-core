@@ -56,6 +56,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.elexis.admin.AccessControlDefaults;
+import ch.elexis.core.constants.Preferences;
 import ch.elexis.core.constants.StringConstants;
 import ch.elexis.core.data.activator.CoreHub;
 import ch.elexis.core.data.events.ElexisEvent;
@@ -94,10 +95,15 @@ import ch.elexis.data.Konsultation;
 import ch.elexis.data.Mandant;
 import ch.elexis.data.Patient;
 import ch.elexis.data.Rechnungssteller;
-import ch.rgw.tools.StringTool;
 import ch.rgw.tools.TimeTool;
 import ch.rgw.tools.VersionedResource;
 import ch.rgw.tools.VersionedResource.ResourceItem;
+
+//20210402js: was needed only for original call to old getPersonalia() w/ manual addition of age
+//import ch.rgw.tools.StringTool;
+//20210402js: was needed only call to fully flexible overload of new getPersonalia()
+//import ch.elexis.data.Person;				
+
 
 /**
  * Behandlungseintrag, Diagnosen und Verrechnung Dg und Verrechnung können wie Drag&Drop aus den
@@ -433,7 +439,22 @@ public class KonsDetailView extends ViewPart
 		}
 		actPat = pat;
 		if (pat != null) {
-			form.setText(pat.getPersonalia() + StringTool.space + "(" + pat.getAlter() + ")");
+			//20210402js: replaced orignal getPersonalia() by new configurable version.
+			//
+			//Original call:
+			//The new implementation still supports this by an overload for full compatibility:
+			//form.setText(pat.getPersonalia() + StringTool.space + "(" + pat.getAlter() + ")");
+			//
+			//New call to overloaded variant for fully flexible use:
+			//form.setText(pat.getPersonalia(
+			//		CoreHub.userCfg.get(Preferences.USR_PERSON_GETPERSONALIA_TEMPLATE,
+			//							Person.personaliaDefaultTemplateStr),
+			//		Person.personaliaWithAge,
+			//		Person.personaliaWithKuerzel));
+			//
+			//New call to overloaded variant for simplest use:
+			form.setText(pat.getPersonaliaWithUSRConfStrWithAgeWithKuerzel());
+			
 			stickerComposite.setPatient(pat);
 			updateFallCombo();
 		}

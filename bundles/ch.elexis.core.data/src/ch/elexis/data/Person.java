@@ -16,7 +16,9 @@ package ch.elexis.data;
 
 import java.util.regex.Pattern;
 
+import ch.elexis.core.constants.Preferences;
 import ch.elexis.core.constants.StringConstants;
+import ch.elexis.core.data.activator.CoreHub;
 import ch.elexis.core.model.ICodeElement;
 import ch.elexis.core.types.Gender;
 import ch.rgw.tools.JdbcLink;
@@ -266,16 +268,46 @@ public class Person extends Kontakt {
 	//Mustermann Max  (88)  01.02.1934  m  Dipl. biol.  [496]
 	"[NAME]| [FIRSTNAME]|  ([AGE])|  [BIRTHDATE]|  [SEX]|  [TITLE]|  [[KUERZEL]]", 
 
+	//The version that I initially coded into the improved Pendenzen view was:
+	//Mustermann Max  01.02.1934  (87)  m
+	
+	//This looks really good there and is extremely well readable,
+	//though it does not include the title or the PID yet.
+	//The only possible point for criticism might be that for clinical users,
+	//the age *closer* to the name would deliver the two most important
+	//data points as closely together as possible, whereas the setting here
+	//is more oriented towards administrative users, who see both name
+	//and dob together as their regular means of identification.
+
 	//Mustermann Max  88  01.02.1934  m  Dipl. biol.
 	//Mustermann Max  88  01.02.1934  m  Dipl. biol.
 	//Mustermann Max  01.02.1934  m  Dipl. biol.  [496]
 	//Mustermann Max  88  01.02.1934  m  Dipl. biol.  [496]
-	"[NAME]| [FIRSTNAME]|  [AGE]|  [BIRTHDATE]|  [SEX]|  [TITLE]|  [[KUERZEL]]"
+	"[NAME]| [FIRSTNAME]|  [AGE]|  [BIRTHDATE]|  [SEX]|  [TITLE]|  [[KUERZEL]]",
+
+	
+	//This may be the best variant, when all data fields shall be displayed:
+	//Mustermann Max  88  m  01.02.1934  Dipl. biol  [469]
+	
+	//Even though the age is separated from DOB here, at the same time
+	//this ensures a change between alpha and numeric info with every other data element,
+	//and therefore, not the slightest need for additional separation characters arises:
+	
+	//Mustermann Max  88  m  01.02.1934  Dipl. biol.
+	//Mustermann Max  88  m  01.02.1934  Dipl. biol.
+	//Mustermann Max  m  01.02.1934  Dipl. biol.  [496]
+	//Mustermann Max  88  m  01.02.1934  Dipl. biol.  [496]
+	"[NAME]| [FIRSTNAME]|  [AGE]|  [SEX]|  [BIRTHDATE]|  [TITLE]|  [[KUERZEL]]"
 	};
 
-	public static int personaliaDefaultTemplate = 0;
-	boolean personaliaDefaultWithAge = false;
-	boolean personaliaDefaultWithKuerzel = false;
+	public static String personaliaDefaultTemplateStr =			//20210402js: stay compatible with the original implementation
+			personaliaTemplates[0]; 
+	public static boolean personaliaDefaultWithAge = false;		//20210402js: stay compatible with the original implementation
+	public static boolean personaliaDefaultWithKuerzel = false;	//20210402js: stay compatible with the original implementation
+	public static boolean personaliaWithAge = true;				//20210402js: allow for easily comprehensible calls
+	public static boolean personaliaWithKuerzel = true;			//20210402js: allow for easily comprehensible calls
+	public static boolean personaliaWithoutAge = false;			//20210402js: allow for easily comprehensible calls
+	public static boolean personaliaWithoutKuerzel = false;		//20210402js: allow for easily comprehensible calls
 
 	String personaliaRemoveUnreplacedSections(String a, String sectionIdentifier) {
 		if ( StringTool.isNothing(a) || StringTool.isNothing(sectionIdentifier) ) return a; 
@@ -294,11 +326,28 @@ public class Person extends Kontakt {
 		return b;
 	}
 	
+	
+	//20210402js: This method overload provides compatibility with the original version
 	public String getPersonalia() {
-		return getPersonalia(personaliaTemplates[personaliaDefaultTemplate],
+		return getPersonalia(personaliaDefaultTemplateStr,
 				personaliaDefaultWithAge, personaliaDefaultWithKuerzel);
 	}
 	
+	//20210402js: This method overload provides convenient calling with user configured template
+	public String getPersonaliaWithUSRConfStr(boolean withAge, boolean withKuerzel) {
+		return getPersonalia(CoreHub.userCfg.get(Preferences.USR_PERSON_GETPERSONALIA_TEMPLATE,
+								Person.personaliaDefaultTemplateStr),	
+							withAge, withKuerzel);
+	}
+
+	//20210402js: This method overload provides even more convenient calling with user configured template, age & kuerzel
+	public String getPersonaliaWithUSRConfStrWithAgeWithKuerzel() {
+		return getPersonalia(CoreHub.userCfg.get(Preferences.USR_PERSON_GETPERSONALIA_TEMPLATE,
+								Person.personaliaDefaultTemplateStr),	
+								personaliaWithAge, personaliaWithKuerzel);
+	}
+	
+	//20210402js: This method overload provides full flexibility
 	public String getPersonalia(String personaliaTemplate, boolean withAge, boolean withKuerzel) {
 		//start with a copy of the supplied format string
 		String ret = new String(personaliaTemplate);
@@ -323,27 +372,39 @@ public class Person extends Kontakt {
 		//YES, I certainly CAN, but NO, I don't WANT to put this into a for loop based upon the fields array.
 		//I prefer to see and understand with a single glance what's happening.
 		//Thank you.
+		//
+		//BTW: This has the nice side effect of NOT providing future mega-security-holes,
+		//which might open up if a more generalized method unexpectedly learned to process
+		//random user-provided SQL queries in a completely uncontrolled manner, after just
+		//a few iterations of replacing simple local methods by omnipotent library functions... 
 		ret = ret.replaceAll(Pattern.quote("[NAME]"),vals[0]);
 		ret = ret.replaceAll(Pattern.quote("[FIRSTNAME]"),vals[1]);
 		ret = ret.replaceAll(Pattern.quote("[BIRTHDATE]"),vals[2]);
 		ret = ret.replaceAll(Pattern.quote("[SEX]"),vals[3]);
 		ret = ret.replaceAll(Pattern.quote("[TITLE]"),vals[4]);
-		if (withAge) ret = ret.replaceAll(Pattern.quote("[AGE]"),"123");
-		if (withKuerzel) ret = ret.replaceAll(Pattern.quote("[KUERZEL]"),"AB");
+		if ( (withAge) && (istPatient()) ) {		//istPatient() bedeutet letztlich: this.istPatient()
+			Patient pat = Patient.load(getId());	//same for getID() here, getKuerzeln() below
+			ret = ret.replaceAll(Pattern.quote("[AGE]"),pat.getAlter());
+		}
+		if (withKuerzel) ret = ret.replaceAll(Pattern.quote("[KUERZEL]"),getKuerzel());
 
-		/*
 		//Second Pass:
 		//Scan for sections with identifiers that have NOT been replaced yet.
 		//If found, delete them.
-		//I'm implementing this by non-greedy pattern matching,
+
+		/*
+		//I'm implementing [nay: tried to implement] this by non-greedy pattern matching,
 		//but to keep the search string requirements simple for users,
 		//this needs a few preparations.
+		
 		//Duplicate all | strings:
 		System.out.println("Before: "+ret);
 		ret = ret.replaceAll(Pattern.quote("|"), "||");
 		System.out.println("After:  "+ret);
+		
 		//Add extra | at the start and at the end:
 		ret = "|"+ret+"|";
+		
 		//Do non greedy search for remaining fields, and replace them by nothing:
 		System.out.println("Before: "+ret);
 		//In java regex logic (like in many others), square brackets designate character classes,
@@ -365,7 +426,7 @@ public class Person extends Kontakt {
 		ret = ret.replaceAll("\\|.*?\\[.+?].*?\\|","");	//Doesn't work as expected (replaces almost all = non-greedy ? ignored :-(
 		System.out.println("After:  "+ret);
 		
-		//Well. - Several hours later, I give up on this new attemt of
+		//Well. - Several hours later, I give up on this new attempt of
 		//"quickly using Java regex replacements, even though I know in advance
 		//that it will be be extra difficult to read, and most probably never work as expected anyway."
 		//Which, by the way, are some of the core differences between Java and Perl... or Pascal... or Assembler... (sic!) :-)

@@ -457,6 +457,11 @@ public class PatientenListeView extends ViewPart implements IActivationListener,
 				// TODO: PatientenListeView.java, Bitte in Person.java
 				// getPersonalia() durch abgewandelte Fassung komplementieren
 				// und den entsprechenden Code dorthin verlagern.
+				//
+				// Update+Info: 20210402js: Now I replaced getPersonlia() by a
+				// a user configurable version, controlled by a template string
+				// and two flags withAge and withKuerzel.
+				//
 				// TODO: Bitte Fehlermeldung Elexis-Konform gestalten,
 				// ggf. Automatik / assistierte Fehlerbehebung hinzufuegen.
 
@@ -511,6 +516,10 @@ public class PatientenListeView extends ViewPart implements IActivationListener,
 						// ggf. hier zu Person.getPersonalia() eine abgewandelte
 						// Fassung hinzufuegen und von hier aus aufrufen.
 
+						// Update+Info: 20210402js: Now I replaced getPersonlia() by a
+						// a user configurable version, controlled by a template string
+						// and two flags withAge and withKuerzel.
+						
 						// Highly similar (but still different) code is now
 						// added to KontakteView.java
 						// CopySelectedContactInfoToClipboard...

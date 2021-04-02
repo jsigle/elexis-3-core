@@ -268,7 +268,7 @@ public class KontakteView extends ViewPart implements ControlFieldListener, ISav
 						//to include the professional title,
 						//show the first name before the family name,
 						//and add a few more details
-						//Leider kann man nicht einfach zus‰tzlich Kontakt.FLD_TITLE oder so laden
+						//Leider kann man nicht einfach zusÔøΩtzlich Kontakt.FLD_TITLE oder so laden
 						
 						//String[] f = new String[] { Kontakt.FLD_NAME1, Kontakt.FLD_NAME2, Kontakt.FLD_NAME3,
 						//		Kontakt.FLD_STREET, Kontakt.FLD_ZIP, Kontakt.FLD_PLACE, Kontakt.FLD_PHONE1 };
@@ -279,7 +279,7 @@ public class KontakteView extends ViewPart implements ControlFieldListener, ISav
 						//		Kontakt.FLD_FAX, Kontakt.FLD_E_MAIL, Person.TITLE};
 						
 						//Try this - does this contain the title? Nope.
-						//Kontakt.FLD_SHORT_LABEL	= Patientennummer oder K¸rzel
+						//Kontakt.FLD_SHORT_LABEL	= Patientennummer oder KÔøΩrzel
 						//So we cannot get the title directly out of Kontakt. Solution see below.
 						
 						String[] f = new String[] { Kontakt.FLD_NAME1, Kontakt.FLD_NAME2, Kontakt.FLD_NAME3,
@@ -785,7 +785,7 @@ public class KontakteView extends ViewPart implements ControlFieldListener, ISav
 										&& (k.get(Kontakt.FLD_NAME3).toUpperCase().indexOf("FMH") >=0) ) {
 										k.set(Kontakt.FLD_NAME3,k.get(Kontakt.FLD_NAME3).replaceAll("(.*) FMH$","Facharzt f√ºr $1 FMH"));		
 								} else if ( k.get(Person.SEX).equals(Person.FEMALE)
-										&& (k.get(Kontakt.FLD_NAME3).toUpperCase().indexOf("FACH√RZT") < 0)
+										&& (k.get(Kontakt.FLD_NAME3).toUpperCase().indexOf("FACHÔøΩRZT") < 0)
 										&& (k.get(Kontakt.FLD_NAME3).toUpperCase().indexOf("FACHAERZT") < 0)
 										&& (k.get(Kontakt.FLD_NAME3).toUpperCase().indexOf("FMH") >=0) ) {
 										k.set(Kontakt.FLD_NAME3,k.get(Kontakt.FLD_NAME3).replaceAll("(.*) FMH$","Fach√§rztin f√ºr $1 FMH"));		
@@ -1061,8 +1061,12 @@ public class KontakteView extends ViewPart implements ControlFieldListener, ISav
 						
 						//System.out.print("jsdebug: SelectedContactInfos.k.toString(): \n"+k.toString()+"\n");
 
-						//The following code is adopted from Kontakt.createStdAnschrift for a different purpose/layout:
+						//TODO: The following code is adopted from Kontakt.createStdAnschrift for a different purpose/layout:
 						//ggf. hier zu Person.getPersonalia() eine abgewandelte Fassung hinzuf√ºgen und von hier aus aufrufen.
+						
+						// Update+Info: 20210402js: Now I replaced getPersonlia() by a
+						// a user configurable version, controlled by a template string
+						// and two flags withAge and withKuerzel.
 						
 						//This highly similar (but still different) code has been adopted from my addition
 						//to PatientenListeView.java CopySelectedPatInfosToClipboard... 201202161313js

@@ -61,7 +61,8 @@ public class UserSettings2 extends FieldEditorPreferencePage implements IWorkben
 		prefs.setDefault(Preferences.USR_SUPPRESS_INTERACTION_CHECK, true);
 		
 		//20210402js:
-		prefs.setDefault(Preferences.USR_PERSON_GETPERSONALIA_TEMPLATE, Person.personaliaTemplates[Person.personaliaDefaultTemplate]);
+		prefs.setDefault(Preferences.USR_PERSON_GETPERSONALIA_TEMPLATE,
+				Person.personaliaDefaultTemplateStr);
 
 	}
 	
@@ -102,12 +103,13 @@ public class UserSettings2 extends FieldEditorPreferencePage implements IWorkben
 		addField(new MultilineFieldEditor(Patientenblatt2.CFG_EXTRAFIELDS, StringTool.leer, 5,
 			SWT.NONE, true, getFieldEditorParent()));
 
+		//20210402js: added drop down menu as initial settings interface for configurable getPersonalia()
 		new Label(getFieldEditorParent(), SWT.SEPARATOR | SWT.HORIZONTAL).setLayoutData(SWTHelper
 				.getFillGridData(2, true, 1, false));
 
-		addField(new ComboFieldEditor(Preferences.USR_PERSON_GETPERSONALIA_TEMPLATE, "getPersonalia Template String",
+		addField(new ComboFieldEditor(Preferences.USR_PERSON_GETPERSONALIA_TEMPLATE,
+				"getPersonalia Template String",
 				Person.personaliaTemplates, getFieldEditorParent()));
-	
 	}
 	
 	public void init(IWorkbench workbench){
