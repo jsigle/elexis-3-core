@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005-2010, G. Weirich and Elexis
+ * Copyright (c) 2005-2010, G. Weirich and Elexis, Copyright (c) 2021 Joerg M. Sigle 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,6 +7,10 @@
  *
  * Contributors:
  *    G. Weirich - initial implementation
+ *    J. Sigle	 - Resorted, structured, refactored, improved, added x content, buttons, menus, comments, messages 
+ *                 Added missing actions to expand/collapse selected/all branches of the left tree,
+ *                 added missing actions to collapse selected/all branches of the right tree
+ *                 and restored missing menu items to use actions to expand selected/all branches of right tree  
  *    
  *  $Id: KonsZumVerrechnenView.java 6229 2010-03-18 14:03:16Z michael_imhof $
  *******************************************************************************/
@@ -33,7 +37,9 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.dnd.DND;
@@ -111,6 +117,7 @@ import ch.rgw.tools.Tree;
  * 
  */
 public class KonsZumVerrechnenView extends ViewPart implements ISaveablePart2 {
+	//20210402js: resorted and added elements
 	public static final String ID = "ch.elexis.BehandlungenVerrechnenView"; //$NON-NLS-1$
 	CommonViewer cv;
 	ViewerConfigurer vc;
@@ -118,24 +125,38 @@ public class KonsZumVerrechnenView extends ViewPart implements ISaveablePart2 {
 	Form left, right;
 	@SuppressWarnings("unchecked")
 	LazyTree tAll;
+	LazyTreeListener ltl;
 	@SuppressWarnings("unchecked")
 	Tree tSelection;
 	TreeViewer tvSel;
-	LazyTreeListener ltl;
 	ViewMenus menu;
-	private IAction billAction, printAction, clearAction, wizardAction, refreshAction,
-			detailAction;
-	private IAction removeAction;
-	private IAction expandSelAction;
-	private IAction expandSelAllAction;
-	private IAction selectByDateAction;
+	//Actions for the left part of the view ("Alle offenen Behandlungen")
+	private IAction refreshAction,
+					wizardAction,
+					selectByDateAction,
+					detailAction;
+	//Actions for the right part of the view ("Rechnungs-Vorschlag")
+	private IAction printAction, 
+					clearAction,
+					billAction;
+	//Actions for the +-pulldown+-context menu of entries of the left part of the view ("Alle offenen Behandlungen")
+	private IAction tAllExpandSelAction,	//20210402js
+					tAllCollapseSelAction,	//20210402js
+					tAllExpandAllAction,	//20210402js
+					tAllCollapseAllAction;	//20210402js		
+	//Actions for the +-pulldown+-context menu of entries of the right part of the view ("Rechnungs-Vorschlag")
+	private IAction removeAction,
+					tSelExpandSelAction,	//20210402js
+					tSelCollapseSelAction,	//20210402js
+					tSelExpandAllAction,	//20210402js
+					tSelCollapseAllAction;	//20210402js
 	KonsZumVerrechnenView self;
 	
 	public KonsZumVerrechnenView(){
 		cv = new CommonViewer();
 		ltl = new RLazyTreeListener();
-		tSelection = new Tree<PersistentObject>(null, null);
 		tAll = new LazyTree<PersistentObject>(null, null, ltl);
+		tSelection = new Tree<PersistentObject>(null, null);
 		self = this;
 	}
 	
@@ -172,7 +193,9 @@ public class KonsZumVerrechnenView extends ViewPart implements ISaveablePart2 {
 				// String[]{"Datum","Name","Vorname","Geb. Dat"}),
 				new ViewerConfigurer.DefaultButtonProvider(), new SimpleWidgetProvider(
 					SimpleWidgetProvider.TYPE_TREE, SWT.MULTI | SWT.V_SCROLL, cv));
+		
 		SashForm sash = new SashForm(parent, SWT.NULL);
+
 		left = tk.createForm(sash);
 		Composite cLeft = left.getBody();
 		left.setText(Messages.KonsZumVerrechnenView_allOpenCons); //$NON-NLS-1$
@@ -224,9 +247,9 @@ public class KonsZumVerrechnenView extends ViewPart implements ISaveablePart2 {
 			@Override
 			public String getText(final Object element){
 				return ((PersistentObject) ((Tree) element).contents).getLabel();
-			}
-			
+			}	
 		});
+		
 		tvSel.setComparator(new KonsZumVerrechnenViewViewerComparator());
 		tvSel.addDropSupport(DND.DROP_MOVE | DND.DROP_COPY, new Transfer[] {
 			TextTransfer.getInstance()
@@ -263,16 +286,17 @@ public class KonsZumVerrechnenView extends ViewPart implements ISaveablePart2 {
 		sash.setWeights(new int[] {
 			60, 40
 		});
+		
 		makeActions();
 		MenuManager selMenu = new MenuManager();
 		selMenu.setRemoveAllWhenShown(true);
-		selMenu.addMenuListener(new IMenuListener() {
-			
+		selMenu.addMenuListener(new IMenuListener() {			
 			public void menuAboutToShow(final IMenuManager manager){
 				manager.add(removeAction);
-				manager.add(expandSelAction);
-				manager.add(expandSelAllAction);
-				
+				manager.add(tSelExpandSelAction);	
+				manager.add(tSelCollapseSelAction);	//20210402js
+				manager.add(tSelExpandAllAction);	
+				manager.add(tSelCollapseAllAction);	//20210402js
 			}
 			
 		});
@@ -310,9 +334,39 @@ public class KonsZumVerrechnenView extends ViewPart implements ISaveablePart2 {
 		});
 		
 		menu = new ViewMenus(getViewSite());
-		menu.createToolbar(refreshAction, wizardAction, printAction, clearAction, null, billAction);
-		menu.createMenu(wizardAction, selectByDateAction);
-		menu.createViewerContextMenu(cv.getViewerWidget(), detailAction);
+		//20210402js: restructured and completed menus and buttons, added comments
+		menu.createToolbar(
+				//Actions for the left part of the view ("Alle offenen Behandlungen")
+				refreshAction,
+				wizardAction,
+				selectByDateAction,
+				detailAction, 
+				null, 
+				//Actions for the right part of the view ("Rechnungs-Vorschlag")
+				printAction,
+				billAction,
+				clearAction,
+				removeAction); 
+		menu.createMenu(
+				//Actions for the left part of the view ("Alle offenen Behandlungen")
+				refreshAction, 
+				wizardAction,
+				selectByDateAction,
+				detailAction, 
+				tAllExpandSelAction,	//20210402js
+				tAllCollapseSelAction,	//20210402js
+				tAllExpandAllAction,	//20210402js
+				tAllCollapseAllAction,	//20210402js
+				null,
+				//Actions for the right part of the view ("Rechnungs-Vorschlag")
+				printAction,
+				billAction,
+				clearAction,
+				removeAction,
+				tSelExpandSelAction,	//20210402js
+				tSelCollapseSelAction,	//20210402js
+				tSelExpandAllAction,	//20210402js
+				tSelCollapseAllAction);	//20210402js
 		addPartActivationListener();
 	}
 	
@@ -514,6 +568,197 @@ public class KonsZumVerrechnenView extends ViewPart implements ISaveablePart2 {
 	}
 	
 	private void makeActions(){
+		//20210402js: Resorted Actions; added expand/collapse implementations and comments 
+		
+		//Actions for the left part of the view ("Konsultationen zum Verrechnen")
+		//tAll is the tree containing "Alle Konsultationen zum Verrechnen" 
+		//This is a LazyTree.
+		
+		refreshAction = new Action(Messages.KonsZumVerrechnenView_reloadAction) { //$NON-NLS-1$
+				{
+					setImageDescriptor(Images.IMG_REFRESH.getImageDescriptor());
+					setToolTipText(Messages.KonsZumVerrechnenView_reloadToolTip); //$NON-NLS-1$
+				}
+				
+				@Override
+				public void run(){
+					tAll.clear();
+					cv.notify(CommonViewer.Message.update);
+					tvSel.refresh(true);
+				}
+			};
+
+		wizardAction = new Action(Messages.KonsZumVerrechnenView_autoAction) { //$NON-NLS-1$
+				{
+					setImageDescriptor(Images.IMG_WIZARD.getImageDescriptor());
+					setToolTipText(Messages.KonsZumVerrechnenView_autoToolTip); //$NON-NLS-1$
+				}
+				
+				@Override
+				public void run(){
+					KonsZumVerrechnenWizardDialog kzvd =
+						new KonsZumVerrechnenWizardDialog(getViewSite().getShell());
+					if (kzvd.open() == Dialog.OK) {
+						IProgressService progressService =
+							PlatformUI.getWorkbench().getProgressService();
+						try {
+							progressService.runInUI(progressService,
+								new Rechnungslauf(self, kzvd.bMarked, kzvd.ttFirstBefore,
+									kzvd.ttLastBefore, kzvd.mAmount, kzvd.bQuartal, kzvd.bSkip,
+									kzvd.ttFrom, kzvd.ttTo, kzvd.accountSys), null);
+						} catch (Throwable ex) {
+							ExHandler.handle(ex);
+						}
+						tvSel.refresh();
+						cv.notify(CommonViewer.Message.update);
+					}
+				}
+			};
+				
+		selectByDateAction = new Action(Messages.KonsZumVerrechnenView_selectByDateAction) { //$NON-NLS-1$
+					TimeTool fromDate;
+					TimeTool toDate;
+					
+					{
+						setImageDescriptor(Images.IMG_WIZARD.getImageDescriptor());
+						setToolTipText(Messages.KonsZumVerrechnenView_selectByDateActionToolTip); //$NON-NLS-1$
+					}
+					
+					@Override
+					public void run(){
+						// select date
+						SelectDateDialog dialog = new SelectDateDialog(getViewSite().getShell());
+						if (dialog.open() == TitleAreaDialog.OK) {
+							fromDate = dialog.getFromDate();
+							toDate = dialog.getToDate();
+							
+							IProgressService progressService =
+								PlatformUI.getWorkbench().getProgressService();
+							try {
+								progressService.runInUI(PlatformUI.getWorkbench().getProgressService(),
+									new IRunnableWithProgress() {
+										public void run(final IProgressMonitor monitor){
+											doSelectByDate(monitor, fromDate, toDate);
+										}
+									}, null);
+							} catch (Throwable ex) {
+								ExHandler.handle(ex);
+							}
+							tvSel.refresh();
+							cv.notify(CommonViewer.Message.update);
+						}
+					}
+					
+				};
+		
+		detailAction =
+				new RestrictedAction(AccessControlDefaults.LSTG_VERRECHNEN,
+					Messages.KonsZumVerrechnenView_billingDetails) { //$NON-NLS-1$
+					@SuppressWarnings("unchecked")
+					@Override
+					public void doRun(){
+						Object[] sel = cv.getSelection();
+						if ((sel != null) && (sel.length > 0)) {
+							new VerrDetailDialog(getViewSite().getShell(), (Tree) sel[0]).open();
+						}
+					}
+				};
+		
+		//20210402js: Added this
+		tAllExpandSelAction = new Action(Messages.KonsZumVerrechnenView_tAllExpandSel) {
+						@Override
+						public void run(){
+							System.out.println("tAllExpandSel");
+							//((TreeViewer) cv.getViewerWidget().getSelection()).expandAll();
+							
+							StructuredViewer tAllSv = cv.getViewerWidget();							
+							IStructuredSelection sel = (IStructuredSelection) tAllSv.getSelection();
+							if (!sel.isEmpty()) {
+								for (Object o : sel.toList()) {
+									if (o instanceof Tree) {
+										Tree t = (Tree) o;
+										((TreeViewer) cv.getViewerWidget()).expandToLevel(t, TreeViewer.ALL_LEVELS);
+									}
+								}
+							}				
+						}
+				};
+		
+		//20210402js: Added this
+		tAllCollapseSelAction = new Action(Messages.KonsZumVerrechnenView_tAllCollapseSel) {
+						@Override
+						public void run(){
+							System.out.println("tAllCollapseSel");
+							//((TreeViewer) cv.getViewerWidget().getSelection()).collapseAll();							
+
+							StructuredViewer tAllSv = cv.getViewerWidget();							
+							IStructuredSelection sel = (IStructuredSelection) tAllSv.getSelection();
+							if (!sel.isEmpty()) {
+								for (Object o : sel.toList()) {
+									if (o instanceof Tree) {
+										Tree t = (Tree) o;
+										((TreeViewer) cv.getViewerWidget()).collapseToLevel(t, TreeViewer.ALL_LEVELS);
+									}
+								}
+							}				
+						}
+				};
+
+		//20210402js: Added this
+		tAllExpandAllAction = new Action(Messages.KonsZumVerrechnenView_tAllExpandAll) {
+						@Override
+						public void run(){
+							//20210402js: This works but does not help all too much here
+							//for (Object t : tAll.getChildren() ) 
+							//System.out.println(t.getClass().toString());
+								
+							//20210402js: This works but does not help all too much here
+							//Object[] sel = cv.getSelection();
+							//if ((sel != null) && (sel.length > 0)) {
+							//	new VerrDetailDialog(getViewSite().getShell(), (Tree) sel[0]).open();
+							//}
+
+							//20210402js: This works and finally DOES what we want here:
+							//Langversion, mit ein paar anderen möglichen Aufrufen:							
+							//StructuredViewer tAllSv = cv.getViewerWidget();
+							//ViewerComparator tAllSvVc = tAllSv.getComparator();
+					        //if (tAllSv instanceof TreeViewer) {
+					        //	//((TreeViewer) tAllSv).expandToLevel(processNode, 1);
+					        //((TreeViewer) tAllSv).expandAll();
+					        //}
+							
+							//20210402js: This works and finally DOES what we want here:
+							//Kurzversion:
+							((TreeViewer) cv.getViewerWidget()).expandAll();							
+						}
+				};
+
+		//20210402js: Added this
+		tAllCollapseAllAction = new Action(Messages.KonsZumVerrechnenView_tAllCollapseAll) {
+						@Override
+						public void run(){
+						((TreeViewer) cv.getViewerWidget()).collapseAll();							
+						}
+				};
+				
+				
+				
+		//Actions for the right part of the view ("Rechnungs-Vorschlag")
+		//tSel is the tree containing the (automatically of manually) selected entries of "Rechnungs-Vorschlag"
+
+		printAction = new Action(Messages.KonsZumVerrechnenView_printSelection) { //$NON-NLS-1$
+				{
+					setImageDescriptor(Images.IMG_PRINTER.getImageDescriptor());
+					setToolTipText(Messages.KonsZumVerrechnenView_printToolTip); //$NON-NLS-1$
+				}
+				
+				@Override
+				public void run(){
+					new SelectionPrintDialog(getViewSite().getShell()).open();
+					
+				}
+			};
+			
 		billAction = new Action(Messages.KonsZumVerrechnenView_createInvoices) { //$NON-NLS-1$
 				{
 					setImageDescriptor(Images.IMG_BILL.getImageDescriptor()); //$NON-NLS-1$
@@ -552,6 +797,7 @@ public class KonsZumVerrechnenView extends ViewPart implements ISaveablePart2 {
 					tvSel.refresh();
 				}
 			};
+
 		clearAction = new Action(Messages.KonsZumVerrechnenView_clearSelection) { //$NON-NLS-1$
 				{
 					setImageDescriptor(Images.IMG_REMOVEITEM.getImageDescriptor()); //$NON-NLS-1$
@@ -565,57 +811,7 @@ public class KonsZumVerrechnenView extends ViewPart implements ISaveablePart2 {
 					tvSel.refresh();
 				}
 			};
-		refreshAction = new Action(Messages.KonsZumVerrechnenView_reloadAction) { //$NON-NLS-1$
-				{
-					setImageDescriptor(Images.IMG_REFRESH.getImageDescriptor());
-					setToolTipText(Messages.KonsZumVerrechnenView_reloadToolTip); //$NON-NLS-1$
-				}
-				
-				@Override
-				public void run(){
-					tAll.clear();
-					cv.notify(CommonViewer.Message.update);
-					tvSel.refresh(true);
-				}
-			};
-		wizardAction = new Action(Messages.KonsZumVerrechnenView_autoAction) { //$NON-NLS-1$
-				{
-					setImageDescriptor(Images.IMG_WIZARD.getImageDescriptor());
-					setToolTipText(Messages.KonsZumVerrechnenView_autoToolTip); //$NON-NLS-1$
-				}
-				
-				@Override
-				public void run(){
-					KonsZumVerrechnenWizardDialog kzvd =
-						new KonsZumVerrechnenWizardDialog(getViewSite().getShell());
-					if (kzvd.open() == Dialog.OK) {
-						IProgressService progressService =
-							PlatformUI.getWorkbench().getProgressService();
-						try {
-							progressService.runInUI(progressService,
-								new Rechnungslauf(self, kzvd.bMarked, kzvd.ttFirstBefore,
-									kzvd.ttLastBefore, kzvd.mAmount, kzvd.bQuartal, kzvd.bSkip,
-									kzvd.ttFrom, kzvd.ttTo, kzvd.accountSys), null);
-						} catch (Throwable ex) {
-							ExHandler.handle(ex);
-						}
-						tvSel.refresh();
-						cv.notify(CommonViewer.Message.update);
-					}
-				}
-			};
-		printAction = new Action(Messages.KonsZumVerrechnenView_printSelection) { //$NON-NLS-1$
-				{
-					setImageDescriptor(Images.IMG_PRINTER.getImageDescriptor());
-					setToolTipText(Messages.KonsZumVerrechnenView_printToolTip); //$NON-NLS-1$
-				}
-				
-				@Override
-				public void run(){
-					new SelectionPrintDialog(getViewSite().getShell()).open();
-					
-				}
-			};
+		
 		removeAction = new Action(Messages.KonsZumVerrechnenView_removeFromSelection) { //$NON-NLS-1$
 				@SuppressWarnings("unchecked")
 				@Override
@@ -640,8 +836,9 @@ public class KonsZumVerrechnenView extends ViewPart implements ISaveablePart2 {
 				}
 			};
 		
+		//This only works in the right part - Rechnungs-Vorschlag
 		// expand action for tvSel
-		expandSelAction = new Action(Messages.KonsZumVerrechnenView_expand) { //$NON-NLS-1$
+		tSelExpandSelAction = new Action(Messages.KonsZumVerrechnenView_tSelExpandSel) {
 				@SuppressWarnings("unchecked")
 				@Override
 				public void run(){
@@ -656,61 +853,44 @@ public class KonsZumVerrechnenView extends ViewPart implements ISaveablePart2 {
 					}
 				}
 			};
+		
+		//20210402js: Added this
+		//This only works in the right part - Rechnungs-Vorschlag
+		// collapse action for tvSel
+		tSelCollapseSelAction = new Action(Messages.KonsZumVerrechnenView_tSelCollapseSel) {
+					@SuppressWarnings("unchecked")
+					@Override
+					public void run(){
+						IStructuredSelection sel = (IStructuredSelection) tvSel.getSelection();
+						if (!sel.isEmpty()) {
+							for (Object o : sel.toList()) {
+								if (o instanceof Tree) {
+									Tree t = (Tree) o;
+									tvSel.collapseToLevel(t, TreeViewer.ALL_LEVELS);
+								}
+							}
+						}
+					}
+				};
+			
+		//This only works in the right part - Rechnungs-Vorschlag
 		// expandAll action for tvSel
-		expandSelAllAction = new Action(Messages.KonsZumVerrechnenView_expandAll) { //$NON-NLS-1$
+		tSelExpandAllAction = new Action(Messages.KonsZumVerrechnenView_tSelExpandAll) {
 				@Override
 				public void run(){
 					tvSel.expandAll();
 				}
 			};
-		
-		selectByDateAction = new Action(Messages.KonsZumVerrechnenView_selectByDateAction) { //$NON-NLS-1$
-				TimeTool fromDate;
-				TimeTool toDate;
-				
-				{
-					setImageDescriptor(Images.IMG_WIZARD.getImageDescriptor());
-					setToolTipText(Messages.KonsZumVerrechnenView_selectByDateActionToolTip); //$NON-NLS-1$
-				}
-				
+			
+		//20210402js: Added this
+		//This only works in the right part - Rechnungs-Vorschlag
+		// expandAll action for tvSel
+		tSelCollapseAllAction = new Action(Messages.KonsZumVerrechnenView_tSelCollapseAll) {
 				@Override
 				public void run(){
-					// select date
-					SelectDateDialog dialog = new SelectDateDialog(getViewSite().getShell());
-					if (dialog.open() == TitleAreaDialog.OK) {
-						fromDate = dialog.getFromDate();
-						toDate = dialog.getToDate();
-						
-						IProgressService progressService =
-							PlatformUI.getWorkbench().getProgressService();
-						try {
-							progressService.runInUI(PlatformUI.getWorkbench().getProgressService(),
-								new IRunnableWithProgress() {
-									public void run(final IProgressMonitor monitor){
-										doSelectByDate(monitor, fromDate, toDate);
-									}
-								}, null);
-						} catch (Throwable ex) {
-							ExHandler.handle(ex);
-						}
-						tvSel.refresh();
-						cv.notify(CommonViewer.Message.update);
-					}
+					tvSel.collapseAll();
 				}
-				
-			};
-		detailAction =
-			new RestrictedAction(AccessControlDefaults.LSTG_VERRECHNEN,
-				Messages.KonsZumVerrechnenView_billingDetails) { //$NON-NLS-1$
-				@SuppressWarnings("unchecked")
-				@Override
-				public void doRun(){
-					Object[] sel = cv.getSelection();
-					if ((sel != null) && (sel.length > 0)) {
-						new VerrDetailDialog(getViewSite().getShell(), (Tree) sel[0]).open();
-					}
-				}
-			};
+		};
 	}
 	
 	/**

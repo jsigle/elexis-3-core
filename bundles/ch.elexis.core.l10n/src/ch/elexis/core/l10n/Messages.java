@@ -135,8 +135,14 @@ public class Messages extends NLS {
 	public static String KonsZumVerrechnenView_databaseRequest;
 	public static String KonsZumVerrechnenView_deleteList;
 	public static String KonsZumVerrechnenView_errorInInvoice;
-	public static String KonsZumVerrechnenView_expand;
-	public static String KonsZumVerrechnenView_expandAll;
+	public static String KonsZumVerrechnenView_tAllExpandSel;
+	public static String KonsZumVerrechnenView_tAllExpandAll;
+	public static String KonsZumVerrechnenView_tAllCollapseSel;
+	public static String KonsZumVerrechnenView_tAllCollapseAll;
+	public static String KonsZumVerrechnenView_tSelExpandSel;
+	public static String KonsZumVerrechnenView_tSelExpandAll;
+	public static String KonsZumVerrechnenView_tSelCollapseSel;
+	public static String KonsZumVerrechnenView_tSelCollapseAll;
 	public static String KonsZumVerrechnenView_findCons;
 	public static String KonsZumVerrechnenView_invoiceForCase;
 	public static String KonsZumVerrechnenView_kons;

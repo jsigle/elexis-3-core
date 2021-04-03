@@ -67,8 +67,14 @@ public class Messages {
 	public static String KonsZumVerrechnenView_databaseRequest = ch.elexis.core.l10n.Messages.KonsZumVerrechnenView_databaseRequest;
 	public static String KonsZumVerrechnenView_deleteList = ch.elexis.core.l10n.Messages.KonsZumVerrechnenView_deleteList;
 	public static String KonsZumVerrechnenView_errorInInvoice = ch.elexis.core.l10n.Messages.KonsZumVerrechnenView_errorInInvoice;
-	public static String KonsZumVerrechnenView_expand = ch.elexis.core.l10n.Messages.KonsZumVerrechnenView_expand;
-	public static String KonsZumVerrechnenView_expandAll = ch.elexis.core.l10n.Messages.KonsZumVerrechnenView_expandAll;
+	public static String KonsZumVerrechnenView_tAllExpandSel = ch.elexis.core.l10n.Messages.KonsZumVerrechnenView_tAllExpandSel;
+	public static String KonsZumVerrechnenView_tAllExpandAll = ch.elexis.core.l10n.Messages.KonsZumVerrechnenView_tAllExpandAll;
+	public static String KonsZumVerrechnenView_tAllCollapseSel = ch.elexis.core.l10n.Messages.KonsZumVerrechnenView_tAllCollapseSel;
+	public static String KonsZumVerrechnenView_tAllCollapseAll = ch.elexis.core.l10n.Messages.KonsZumVerrechnenView_tAllCollapseAll;
+	public static String KonsZumVerrechnenView_tSelExpandSel = ch.elexis.core.l10n.Messages.KonsZumVerrechnenView_tSelExpandSel;
+	public static String KonsZumVerrechnenView_tSelExpandAll = ch.elexis.core.l10n.Messages.KonsZumVerrechnenView_tSelExpandAll;
+	public static String KonsZumVerrechnenView_tSelCollapseSel = ch.elexis.core.l10n.Messages.KonsZumVerrechnenView_tSelCollapseSel;
+	public static String KonsZumVerrechnenView_tSelCollapseAll = ch.elexis.core.l10n.Messages.KonsZumVerrechnenView_tSelCollapseAll;
 	public static String KonsZumVerrechnenView_findCons = ch.elexis.core.l10n.Messages.KonsZumVerrechnenView_findCons;
 	public static String KonsZumVerrechnenView_invoiceForCase = ch.elexis.core.l10n.Messages.KonsZumVerrechnenView_invoiceForCase;
 	public static String KonsZumVerrechnenView_kons = ch.elexis.core.l10n.Messages.KonsZumVerrechnenView_kons;
