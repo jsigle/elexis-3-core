@@ -267,7 +267,7 @@ public class KontakteView extends ViewPart implements ControlFieldListener, ISav
 						//to include the professional title,
 						//show the first name before the family name,
 						//and add a few more details
-						//Leider kann man nicht einfach zus�tzlich Kontakt.FLD_TITLE oder so laden
+						//Leider kann man nicht einfach zusätzlich Kontakt.FLD_TITLE oder so laden
 						
 						//String[] f = new String[] { Kontakt.FLD_NAME1, Kontakt.FLD_NAME2, Kontakt.FLD_NAME3,
 						//		Kontakt.FLD_STREET, Kontakt.FLD_ZIP, Kontakt.FLD_PLACE, Kontakt.FLD_PHONE1 };
@@ -278,7 +278,7 @@ public class KontakteView extends ViewPart implements ControlFieldListener, ISav
 						//		Kontakt.FLD_FAX, Kontakt.FLD_E_MAIL, Person.TITLE};
 						
 						//Try this - does this contain the title? Nope.
-						//Kontakt.FLD_SHORT_LABEL	= Patientennummer oder K�rzel
+						//Kontakt.FLD_SHORT_LABEL	= Patientennummer oder Kürzel
 						//So we cannot get the title directly out of Kontakt. Solution see below.
 						
 						String[] f = new String[] { Kontakt.FLD_NAME1, Kontakt.FLD_NAME2, Kontakt.FLD_NAME3,
@@ -784,7 +784,7 @@ public class KontakteView extends ViewPart implements ControlFieldListener, ISav
 										&& (k.get(Kontakt.FLD_NAME3).toUpperCase().indexOf("FMH") >=0) ) {
 										k.set(Kontakt.FLD_NAME3,k.get(Kontakt.FLD_NAME3).replaceAll("(.*) FMH$","Facharzt für $1 FMH"));		
 								} else if ( k.get(Person.SEX).equals(Person.FEMALE)
-										&& (k.get(Kontakt.FLD_NAME3).toUpperCase().indexOf("FACH�RZT") < 0)
+										&& (k.get(Kontakt.FLD_NAME3).toUpperCase().indexOf("FACHÄRZT") < 0)
 										&& (k.get(Kontakt.FLD_NAME3).toUpperCase().indexOf("FACHAERZT") < 0)
 										&& (k.get(Kontakt.FLD_NAME3).toUpperCase().indexOf("FMH") >=0) ) {
 										k.set(Kontakt.FLD_NAME3,k.get(Kontakt.FLD_NAME3).replaceAll("(.*) FMH$","Fachärztin für $1 FMH"));		
