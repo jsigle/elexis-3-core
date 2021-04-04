@@ -1,6 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005-2010, G. Weirich and Elexis
- * Portions (c) 2012-2021, Joerg M. Sigle (js, jsigle)
+ * Copyright (c) 2005-2010, G. Weirich and Elexis, Portions (c) 2012-2021, Joerg M. Sigle (js, jsigle)
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at

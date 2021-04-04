@@ -64,9 +64,7 @@ import ch.rgw.tools.TimeTool;
 
 public class KontaktSelektor extends TitleAreaDialog implements DoubleClickListener {
 	
-	// Name, Vorname, gebdat, strasse, plz, ort, tel, zusatz, fax, email
-	public static final int HINTSIZE = 12;
-	
+	// Name, Vorname, gebdat, strasse, plz, ort, tel, zusatz, fax, email, akTitel
 	public static final int HINT_NAME = 0;
 	public static final int HINT_FIRSTNAME = 1;
 	public static final int HINT_BIRTHDATE = 2;
@@ -79,6 +77,18 @@ public class KontaktSelektor extends TitleAreaDialog implements DoubleClickListe
 	public static final int HINT_MAIL = 9;
 	public static final int HINT_SEX = 10;
 	public static final int HINT_PATIENT = 11;
+	//20210403js: Added this; however THIS causes problems below
+	//when used as index into fld[] whose length is 10.
+	//For whatever reason, and whereever it is instantiated/initialized.
+	//I couldn't manage to find this out in serveral hours of time
+	//and I give it up right now because I can't afford to search further.
+	//Wouldn't it be good if this program was not made from a labyrinth
+	//of code snippets, first hacked into pieces, then mixed and glued together... 
+	public static final int HINT_AKTITEL = 12;		//20210402js 
+	//20210403js: Though available before, HINTSIZE is mostly ignored.
+	//At least it doesn't ensure that hints or fld have this size.
+	public static final int HINTSIZE = 13;
+
 	
 	// private Class clazz;
 	CommonViewer cv;
@@ -137,18 +147,19 @@ public class KontaktSelektor extends TitleAreaDialog implements DoubleClickListe
 	}
 	
 	/**
-	 * Provide a few hints in case the user clicks "Neu erstellen". The hints is an array of up to
-	 * 10 Strings as used in KontaktErfassenDialog
+	 * Provide a few hints in case the user clicks "Neu erstellen".
+	 * The hints is an array of up to HINTSIZE Strings as used in KontaktErfassenDialog
 	 * 
 	 * @param hints
-	 *            Name, Vorname, gebdat, strasse, plz, ort, tel, zusatz, fax, email
+	 *            Name, Vorname, gebdat, strasse, plz, ort, tel, zusatz, fax, email, akTitel
 	 */
 	public void setHints(String[] h){
 		this.hints = h;
-		for (int i = 0; i < hints.length; i++) { // make KontaktErfassenDialog
-			// happy
+		// make KontaktErfassenDialog // happy
+		for (int i = 0; i < hints.length; i++) {
 			if (hints[i] == null) {
 				hints[i] = "";
+			System.out.println("setHints["+String.valueOf(i)+"]="+hints[i]);
 			}
 		}
 		if (!StringTool.isNothing(hints[HINT_BIRTHDATE])) {
@@ -165,6 +176,9 @@ public class KontaktSelektor extends TitleAreaDialog implements DoubleClickListe
 			} else {
 				hints[HINT_SEX] = Person.FEMALE;
 			}
+		}
+		if (!StringTool.isNothing(hints[HINT_AKTITEL])) {
+				hints[HINT_AKTITEL] = Messages.KontaktErfassenDialog_akTitel;
 		}
 	}
 	
@@ -315,6 +329,7 @@ public class KontaktSelektor extends TitleAreaDialog implements DoubleClickListe
 						return false;
 					}
 				}, new SimpleWidgetProvider(SimpleWidgetProvider.TYPE_LAZYLIST, SWT.NONE, cv));
+		
 		Composite types = new Composite(ret, SWT.BORDER);
 		types.setLayout(new FillLayout());
 		types.setLayoutData(SWTHelper.getFillGridData(1, true, 1, false));

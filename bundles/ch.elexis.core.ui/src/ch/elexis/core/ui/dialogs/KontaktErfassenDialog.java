@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007-2010, medshare and Elexis
+ * Copyright (c) 2007-2010, medshare and Elexis, Portions (c) 2021 Jörg M. Sigle
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,6 +8,8 @@
  * Contributors:
  *    M. Imhof - initial implementation
  *    G. Weirich - added Anschrift
+ *    J. Sigle - added (akademischer) Titel incl. automatic split and
+ *    			 transfer from updated medshare directories result
  * 
  *******************************************************************************/
 package ch.elexis.core.ui.dialogs;
@@ -59,13 +61,20 @@ public class KontaktErfassenDialog extends TitleAreaDialog {
 	Kontakt newKontakt = null;
 	
 	String[] fld;
-	Text tName, tVorname, tZusatz, tGebDat, tStrasse, tPlz, tOrt, tTel, tFax, tEmail;
+	//20210421js: Size and contents of fld[] should be kept in sync with HINT_...
+	//at the beginning of KontaktSelektor.java class Kontaktselektor,
+	//otherwise fld[HINT_AKTITEL] may easily point beyond fld[fld.length()-1].
+	Text tName, tVorname, tGebDat, tStrasse, tPlz, tOrt, tTel, tZusatz, tFax, tEmail, /*tSex, tPatient,*/ tTitel;
 	Combo cbSex;
-	Label lName, lVorname, lZusatz;
+	Label lName, lVorname, lZusatz, lTitel;
 	Hyperlink hlAnschrift;
 	
 	public KontaktErfassenDialog(final Shell parent, final String[] fields){
 		super(parent);
+		//20210403js: incoming fields.length is 10, that's why fld does also get length 10 below,
+		//and that's why associating anything with fld[n>9] creates an out-of-bounds error,
+		//and that's why HINTSIZE and HINT_... above with n>9 are currently of no use.
+		System.out.println("KontaktErfassenDialog: incoming fields.length="+fields.length);
 		fld = fields;
 	}
 	
@@ -137,6 +146,75 @@ public class KontaktErfassenDialog extends TitleAreaDialog {
 		Composite ret = new Composite(parent, SWT.NONE);
 		ret.setLayoutData(SWTHelper.getFillGridData(1, true, 1, true));
 		ret.setLayout(new GridLayout(2, false));
+		
+		
+		//TODO: 20210403js: Added this; however THIS causes problems below
+		//when used as index into fld[] whose length is 10.
+		//For whatever reason, and whereever it is instantiated/initialized.
+		//I couldn't manage to find this out in serveral hours of time
+		//and I give it up right now because I can't afford to search further.
+		//Wouldn't it be good if this program was not made from a labyrinth
+		//of code snippets, first hacked into pieces, then mixed and glued together...
+
+		//TODO: 20210403js: fld.length ergibt hier nur 10 oder 11, wohl je
+		//nachdem, woher der Dialog aufgerufen wird. Dementsprechend werden
+		//dann unterschiedlich viele Felder angezeigt oder bPatient wohl vorbelegt -
+		//siehe ein bisschen weiter oben. --- LEIDER wird dem Dialog dementsprechend
+		//auch ein fld mit unterschiedlich vielen Feldern angeliefert, UND mindestens
+		//hier in dieser Prozedur, möglicherweise aber auch sonstwo wird anhand
+		//von fld.length auch ermittelt, was hier und dort wie gemacht werden
+		//soll, UND die Inhalte der Felder werden gerade nicht über schön
+		//definierte arrays aus benannten Feldern bestimmt, sondern über
+		//numerische Indizes, deren Bedeutung dann in FLD_... und HINT_...
+		//versteckt wird. HMPF. -- UND (!!!) manche aufrufenden Methoden
+		//bezeichnen die Felder direkt über ihre Nummer (also fld[1], fld[2] usw.)
+		//Also: Es wird ziemlich schwer und ziemlich riskant, hier z.B. ein Feld
+		//"(akademischer) Titel" möglichst noch VOR den Feldern für Name und Vorname
+		//einzu fügen - so dass rundum nicht plötzlich irgendwelche Teilfunktionalität
+		//ausfällt oder für die falschen Kontaktarten aufgerufen wird, oder dass
+		//plötzlich "Otto Müller" bei Strasse und Ort landet (oder ähnliches).
+		//WAS ich jetzt vorläufig mache:
+		//Ich mache mal experimentell fld[] um so viele Felder länger,
+		//wie bis zu fld[HINT_AKTITEL] nötig sind - d.h. das wird IMMER
+		//mit HINTSIZE feldern enden, weil ich HINT_AKTITEL in KontaktSelektor
+		//ja nun mit der ersten freien Nummer = HINTEN angefügt habe.
+		//Mal schauen, was dann passiert.
+		//Die angefügten Felder belege ich mit "" vor.
+
+		//20210403js: Wenn fld zu klein ist,...
+		//System.out.println("createDialogArea: fld.length()="+fld.length);
+		if (fld.length<KontaktSelektor.HINT_AKTITEL) {
+			//lege ausreichend grosses temp array an.
+			String[] tmpfld = new String[KontaktSelektor.HINT_AKTITEL+1];
+			//kopiere die vorhandenen Daten von fld nach tmpfld...
+			System.arraycopy(fld,0,tmpfld,0,fld.length);
+			//initialisiere die neu hinzugekommenen Strings
+			for (int i=fld.length; i<tmpfld.length; i++)
+				tmpfld[i] = "";
+			//lasse fld auf das neue array zeigen, das alte entfernt der garbage collector
+			fld = tmpfld;			
+		}
+		//SO. JETZT kann ich beruhigt etwas mit dem Feld fld[KontaktSelektor.HINT_AKTUELL] anfangen.
+		//System.out.println("createDialogArea: fld.length()="+fld.length);
+		lTitel = new Label(ret, SWT.NONE);
+		lTitel.setText(Messages.KontaktErfassenDialog_akTitel); //$NON-NLS-1$
+		tTitel = new Text(ret, SWT.BORDER);
+		//Ob das fld jemals hier so hereinkommt, DASS da schon irgendwas drinstehen würde,
+		//was nun dargestellt werden dürfte - weiss ich nicht. Eigentlich ist aber genau das
+		//EIN Sinn dieser Erweiterung, denn ich möchte einen aus dem Ergebnis der wiederbelebten
+		//medshare directories Suche gefundenen Titel hier bereits vorbelegen - und ZWEITENS
+		//will ich haben, dass man Kontaktdaten von Kollegen oder auch Patienten mit einem
+		//akademischen oder professionellen Titel SOFORT in einem Dialog eingeben kann, und
+		//nicht (wie aohl bisher) zuerst einen Kontakt ohne diesen Titel anlegen, und danach
+		//nochmal in die View Kontakte Details gehen und dort den Titel nachtragen muss.
+		tTitel.setText(fld[KontaktSelektor.HINT_AKTITEL]);
+		tTitel.setLayoutData(SWTHelper.getFillGridData(1, true, 1, false));
+		tTitel.setTextLimit(80);
+		//NACH dieser Erweiterung wird nun schon mal ein Feld (akademischer) Titel OHNE
+		//java.out-of-bounds-Error im Dialog angezeigt, der erscheint, wenn man in der
+		//Kontakte View auf (+) klickt, und zwar wie von mir gewünscht ganz oben :-)
+		//NICHT angezeigt wird das Feld leider, nach Klick auf (+) in der Patientenliste :-(
+
 		
 		lName = new Label(ret, SWT.NONE);
 		lName.setText(Messages.KontaktErfassenDialog_name); //$NON-NLS-1$
@@ -277,6 +355,7 @@ public class KontaktErfassenDialog extends TitleAreaDialog {
 			bOrganisationChanged(false);
 			lName.setText(Messages.KontaktErfassenDialog_name);//$NON-NLS-1$
 			lVorname.setText(Messages.KontaktErfassenDialog_firstName); //$NON-NLS-1$
+			lTitel.setText(Messages.KontaktErfassenDialog_akTitel); //$NON-NLS-1$
 			lZusatz.setText(Messages.KontaktErfassenDialog_zusatz); //$NON-NLS-1$
 			cbSex.setEnabled(true);
 			lName.getParent().layout();
@@ -313,7 +392,8 @@ public class KontaktErfassenDialog extends TitleAreaDialog {
 	}
 	
 	private void createKontakt(){
-		String[] ret = new String[8];
+		String[] ret = new String[9];
+		ret[8] = tTitel.getText();		//20210403js
 		ret[0] = tName.getText();
 		ret[1] = tVorname.getText();
 		int idx = cbSex.getSelectionIndex();
@@ -386,6 +466,7 @@ public class KontaktErfassenDialog extends TitleAreaDialog {
 				} else if (bPerson.getSelection()) {
 					newKontakt = new Person(ret[0], ret[1], ret[3], ret[2]);
 					newKontakt.set("Zusatz", tZusatz.getText()); //$NON-NLS-1$
+					newKontakt.set("Titel", tTitel.getText());	//20210403js
 				} else if (bLabor.getSelection()) {
 					newKontakt = new Labor(ret[0], ret[0]);
 					newKontakt.set("Zusatz1", ret[1]); //$NON-NLS-1$

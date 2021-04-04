@@ -707,6 +707,7 @@ public class Messages extends NLS {
 	public static String KontaktErfassenDialog_postalempty;
 	public static String KontaktErfassenDialog_postanschrift;
 	public static String KontaktErfassenDialog_subTitle;
+	public static String KontaktErfassenDialog_akTitel;
 	public static String KontaktErfassenDialog_title;
 	public static String KontaktErfassenDialog_unbekannterTyp_msg;
 	public static String KontaktErfassenDialog_unbekannterTyp_title;

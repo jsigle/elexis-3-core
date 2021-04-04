@@ -185,6 +185,7 @@ public class Messages {
 	public static String KontaktErfassenDialog_postalempty = ch.elexis.core.l10n.Messages.KontaktErfassenDialog_postalempty;
 	public static String KontaktErfassenDialog_postanschrift = ch.elexis.core.l10n.Messages.KontaktErfassenDialog_postanschrift;
 	public static String KontaktErfassenDialog_subTitle = ch.elexis.core.l10n.Messages.KontaktErfassenDialog_subTitle;
+	public static String KontaktErfassenDialog_akTitel = ch.elexis.core.l10n.Messages.KontaktErfassenDialog_akTitel;
 	public static String KontaktErfassenDialog_title = ch.elexis.core.l10n.Messages.KontaktErfassenDialog_title;
 	public static String KontaktErfassenDialog_unbekannterTyp_msg = ch.elexis.core.l10n.Messages.KontaktErfassenDialog_unbekannterTyp_msg;
 	public static String KontaktErfassenDialog_unbekannterTyp_title = ch.elexis.core.l10n.Messages.KontaktErfassenDialog_unbekannterTyp_title;
