@@ -586,6 +586,7 @@ public class BestellView extends ViewPart implements ISaveablePart2 {
 				dlg.setTitle(Messages.BestellView_ReadOrder); //$NON-NLS-1$
 				
 				if (dlg.open() == Dialog.OK) {
+					// js: Only a non-empty result should be used any further.
 					if (dlg.getResult().length > 0) {
 						Bestellung res = (Bestellung) dlg.getResult()[0];
 						setBestellung(res);
