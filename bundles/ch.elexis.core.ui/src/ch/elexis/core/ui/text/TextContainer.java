@@ -355,7 +355,9 @@ public class TextContainer {
 			showErrors = false;
 		}
 		String[] tokens = fieldl.split("\\."); //$NON-NLS-1$
-		if (tokens.length <= 2) {
+		//if (tokens.length <= 2) {				//20210405js: THIS IS what causes most variables to fail in the TR44_S1 template
+		if (tokens.length < 2) {				//20210405js: I just want to see what happens when I lower the requirement... better
+		//if (tokens.length < 1) {				//20210405js: <2 has more fields replaced; let's see what <1 does... same as <2.
 			if (showErrors) {
 				return WARNING_SIGN + fieldl + WARNING_SIGN;
 			} else {
@@ -377,9 +379,18 @@ public class TextContainer {
 		}
 		
 		// resolve intermediate objects
+		// 20210405js: There is indeed no reason why this should NOT work for a placeholder of 2 tokens only.
+		// With a total of 2 tokens, the for loop will have only a single pass - but that's perfectly legit.
 		IPersistentObject current = first;
 		for (int i = 1; i < tokens.length - 1; i++) {
 			IPersistentObject next = resolveIndirectObject(current, tokens[i]);
+			//20210405js: For some variables that could not be replaced, it is plausible
+			//as long as the requested data are not available.
+			//So if the replacement fails for the LAST token, accept this,
+			//do output a warning in the system log, and return an empty string
+			//instead of returning "" ... or: Simply disabling the errors might
+			//do just that and return "" instead of ??...?? which is most probably
+			//the equivalent of "WARING_SIGN + field1 + WARNING_SIGN"
 			if (next == null) {
 				if (showErrors) {
 					return WARNING_SIGN + fieldl + WARNING_SIGN;
