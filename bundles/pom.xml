@@ -45,7 +45,7 @@
     <module>ch.elexis.core.ui.eigenartikel</module>
     <module>ch.elexis.core.ui.eigendiagnosen</module>
     <module>ch.elexis.core.ui.icons</module>
-    <module>ch.elexis.core.ui.importer.div.native32</module>
+<!--    <module>ch.elexis.core.ui.importer.div.native32</module> -->
     <module>ch.elexis.core.ui.importer.div.native64</module>
     <module>ch.elexis.core.ui.importer.div</module>
     <module>ch.elexis.core.ui.laboratory</module>

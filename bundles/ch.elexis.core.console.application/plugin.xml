@@ -2,12 +2,6 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
-         point="ch.elexis.core.data.coreOperation">
-      <coreOperation
-            advisor="ch.elexis.core.console.application.CoreOperationAdvisor">
-      </coreOperation>
-   </extension>
-   <extension
          id="ConsoleApplication"
          name="Elexis Console Application"
          point="org.eclipse.core.runtime.applications">
@@ -19,6 +13,12 @@
                class="ch.elexis.core.console.application.Application">
          </run>
       </application>
+   </extension>
+   <extension
+         point="ch.elexis.core.data.coreOperation">
+      <coreOperation
+            advisor="ch.elexis.core.console.application.CoreOperationAdvisor">
+      </coreOperation>
    </extension>
 
 </plugin>

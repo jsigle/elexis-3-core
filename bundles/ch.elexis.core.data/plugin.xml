@@ -36,6 +36,12 @@
       </propertyTester>
    </extension>
   <extension
+        point="org.eclipse.core.runtime.preferences">
+     <initializer
+           class="ch.elexis.core.data.preferences.CorePreferenceInitializer">
+     </initializer>
+  </extension>
+  <extension
         point="ch.elexis.core.data.ACLContribution">
      <ACLContribution
            ACLContributor="ch.elexis.admin.ACLContributor"
@@ -66,11 +72,5 @@
            resolver="ch.elexis.core.data.text.resolver.FallKostentraegerResolver"
            type="ch.elexis.data.Fall">
      </TextPlaceHolder>
-  </extension>
-  <extension
-        point="org.eclipse.core.runtime.preferences">
-     <initializer
-           class="ch.elexis.core.data.preferences.CorePreferenceInitializer">
-     </initializer>
   </extension>
 </plugin>

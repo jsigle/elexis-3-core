@@ -15,19 +15,19 @@
 <plugin>
 
    <extension point="org.eclipse.emf.ecore.generated_package">
-      <!-- @generated types -->
-      <package
-            uri="http://ch.elexis.core/model/types"
-            class="ch.elexis.core.types.TypesPackage"
-            genModel="model/types.genmodel"/>
-   </extension>
-
-   <extension point="org.eclipse.emf.ecore.generated_package">
       <!-- @generated model -->
       <package
             uri="http://ch.elexis.corel/model/model"
             class="ch.elexis.core.model.ModelPackage"
             genModel="model/model.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated types -->
+      <package
+            uri="http://ch.elexis.core/model/types"
+            class="ch.elexis.core.types.TypesPackage"
+            genModel="model/types.genmodel"/>
    </extension>
 
 </plugin>
