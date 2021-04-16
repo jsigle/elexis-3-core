@@ -7,10 +7,24 @@
  *
  * Contributors:
  *    G. Weirich - initial implementation
- *    J. Sigle	 - Resorted, structured, refactored, improved, added x content, buttons, menus, comments, messages 
+ *    J. Sigle	 - 20210402js: Resorted, structured, refactored, improved, added x content, buttons, menus, comments, messages 
  *                 Added missing actions to expand/collapse selected/all branches of the left tree,
  *                 added missing actions to collapse selected/all branches of the right tree
- *                 and restored missing menu items to use actions to expand selected/all branches of right tree  
+ *                 and restored missing menu items to use actions to expand selected/all branches of right tree
+ *    J. Sigle   - 20210416js: Für JH: Simpler Filter für Fälle aus den Abrechnungssystemen "Keine Rechnung" und
+ *                 "Lindenhof - keine Praxisrechnung" wieder eingefügt: toggleDontShowCasesforBillSystKeineRechnungAction.
+ *                 Vormals ähnlich realisiert, dann von Niklaus Giger mit eigener Variable in der
+ *                 Abrechnungssystem-Definition adaptiert, aber nicht ins Mainstream Elexis übernommen.
+ *                 (elexis-3-core und elexis-3-base branch b11383, 6 commits [9553] ... )  
+ *                 Da diese Variable in ein Array vor kritische des neuen BillingSystem eingefügt und
+ *                 über Index angesprochen wird, übernehme ich das jetzt nicht, so lange das nicht im
+ *                 Mainstream Elexis ist oder ich in Ruhe schauen kann, wo überall die Edits sind.
+ *                 Stattdessen füge ich nur wieder eine einfache über Pulldown-Menu steuerbare Variante ein,
+ *                 die das SQL select um die Bedingung Faelle.Gesetz not like %eine %echnung%" ergänzt.
+ *                 Immerhin ist dies inzwischen möglich, nachdem diese Information aus dem Blob herausgeholt
+ *                 wurde. Andererseits müsste das Feld Falle.Gesetz in der Datenbank nun eigentlich
+ *                 umbenannt werden in Faelle.Abrechnungssystem.
+ *                 N.B.: Kommentare zur Funktionsweise der View in der in der 2.1.7js Version.
  *    
  *  $Id: KonsZumVerrechnenView.java 6229 2010-03-18 14:03:16Z michael_imhof $
  *******************************************************************************/
@@ -73,6 +87,7 @@ import org.eclipse.ui.progress.IProgressService;
 import com.tiff.common.ui.datepicker.DatePickerCombo;
 
 import ch.elexis.admin.AccessControlDefaults;
+import ch.elexis.core.constants.Preferences;
 import ch.elexis.core.data.activator.CoreHub;
 import ch.elexis.core.data.events.ElexisEventDispatcher;
 import ch.elexis.core.ui.Hub;
@@ -101,6 +116,7 @@ import ch.elexis.data.Fall;
 import ch.elexis.data.Konsultation;
 import ch.elexis.data.Patient;
 import ch.elexis.data.PersistentObject;
+import ch.elexis.data.Reminder;
 import ch.rgw.tools.ExHandler;
 import ch.rgw.tools.JdbcLink.Stm;
 import ch.rgw.tools.LazyTree;
@@ -131,8 +147,9 @@ public class KonsZumVerrechnenView extends ViewPart implements ISaveablePart2 {
 	TreeViewer tvSel;
 	ViewMenus menu;
 	//Actions for the left part of the view ("Alle offenen Behandlungen")
-	private IAction refreshAction,
-					wizardAction,
+	private IAction toggleDontShowCasesforBillSystKeineRechnungAction,	//20210416js
+					refreshAction,
+	                wizardAction,
 					selectByDateAction,
 					detailAction;
 	//Actions for the right part of the view ("Rechnungs-Vorschlag")
@@ -349,6 +366,7 @@ public class KonsZumVerrechnenView extends ViewPart implements ISaveablePart2 {
 				removeAction); 
 		menu.createMenu(
 				//Actions for the left part of the view ("Alle offenen Behandlungen")
+				toggleDontShowCasesforBillSystKeineRechnungAction,	//20210416js
 				refreshAction, 
 				wizardAction,
 				selectByDateAction,
@@ -395,6 +413,11 @@ public class KonsZumVerrechnenView extends ViewPart implements ISaveablePart2 {
 									sql += "AND BEHANDLUNGEN.MANDANTID=" //$NON-NLS-1$
 										+ CoreHub.actMandant.getWrappedId();
 								}
+								
+								if (toggleDontShowCasesforBillSystKeineRechnungAction.isChecked()) {	//20210416js
+									sql += " AND NOT FAELLE.GESETZ like \"%eine %echnung%\" "; //$NON-NLS-1$
+									}
+
 								ResultSet rs = stm.query(sql);
 								monitor.worked(10);
 								monitor.subTask(Messages.KonsZumVerrechnenView_readIn); //$NON-NLS-1$
@@ -430,6 +453,11 @@ public class KonsZumVerrechnenView extends ViewPart implements ISaveablePart2 {
 							sql +=
 								" AND BEHANDLUNGEN.MANDANTID=" + CoreHub.actMandant.getWrappedId(); //$NON-NLS-1$
 						}
+
+						if (toggleDontShowCasesforBillSystKeineRechnungAction.isChecked()) {	//20210416js
+							sql += " AND NOT FAELLE.GESETZ like \"%eine %echnung%\" "; //$NON-NLS-1$
+							}
+
 						rs = stm.query(sql);
 						while ((rs != null) && rs.next()) {
 							String s = rs.getString(1);
@@ -573,6 +601,17 @@ public class KonsZumVerrechnenView extends ViewPart implements ISaveablePart2 {
 		//Actions for the left part of the view ("Konsultationen zum Verrechnen")
 		//tAll is the tree containing "Alle Konsultationen zum Verrechnen" 
 		//This is a LazyTree.
+		
+		toggleDontShowCasesforBillSystKeineRechnungAction = new Action(Messages.KonsZumVerrechnenView_dontShowCasesforBillSystKeineRechnung) { //$NON-NLS-1$
+			{
+				setChecked(CoreHub.userCfg.get(Preferences.USR_KONSZUMVERR_DONTSHOWCASESKEINERECHNUNG, true));
+			}
+			@Override
+			public void run(){
+				CoreHub.userCfg.set(Preferences.USR_KONSZUMVERR_DONTSHOWCASESKEINERECHNUNG,isChecked());
+				}
+
+			};
 		
 		refreshAction = new Action(Messages.KonsZumVerrechnenView_reloadAction) { //$NON-NLS-1$
 				{
