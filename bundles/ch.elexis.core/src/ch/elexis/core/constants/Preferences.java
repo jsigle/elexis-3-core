@@ -171,7 +171,10 @@ public class Preferences {
 	//20210402js:
 	public static final String USR_PERSON_GETPERSONALIA_TEMPLATE = "anwender/getpersonaliatemplate"; //$NON-NLS-1$
 	public static final String USR_PERSON_GETPERSONALIA_TEMPLATE_PATIENT_GETLABEL = "anwender/getpersonaliatemplatepatientgetlabel"; //$NON-NLS-1$
-	
+
+	//20210416js: Konsultationen zum Verrechnen
+	public final static String USR_KONSZUMVERR_DONTSHOWCASESKEINERECHNUNG = "billing/dontshowcaseskeinerechnung";
+
 	// Menu item "lock perspectives" (GlobalActions.fixLayoutAction)
 	public static final String USR_FIX_LAYOUT = "perspectives/fix_layout"; //$NON-NLS-1$
 	public static final boolean USR_FIX_LAYOUT_DEFAULT = false;
@@ -237,7 +240,7 @@ public class Preferences {
 	public final static String LEISTUNGSCODES_COLOR = "billing/color/"; //$NON-NLS-1$
 	public final static String LEISTUNGSCODES_EIGENLEISTUNG_USEMULTI_SYSTEMS =
 		"billing/eigenleistung/usemultiplier/systems"; //$NON-NLS-1$
-	
+		
 	// Medication
 	public static final String MEDICATION_SETTINGS_EMEDIPLAN_HEADER_COMMENT =
 			"medication/settings/emediplanHeaderComment";
